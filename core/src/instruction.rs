@@ -25,6 +25,8 @@ pub enum Operand {
 #[repr(u8)]
 #[derive(Debug, Serialize, Deserialize)]
 pub enum IndexRegScale {
+    // FIXME: this is only here for testing, remove it
+    None = 0,
     One = 1,
     Two = 2,
     Four = 4,
