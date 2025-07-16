@@ -8,3 +8,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 dynamorio-sys = "11.90.1"
+parking_lot = "0.12.4"
