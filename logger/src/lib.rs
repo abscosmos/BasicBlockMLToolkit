@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::ffi::{c_char, c_int, CStr};
 use std::fs::File;
+use std::num::NonZeroUsize;
 use std::ptr::NonNull;
 use std::slice;
 use dynamorio_sys::{client_id_t, dr_free_module_data, dr_get_application_name, dr_get_main_module, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, module_data_t};
@@ -14,7 +15,7 @@ pub static _USES_DR_VERSION_: c_int = dynamorio_sys::_USES_DR_VERSION_;
 
 struct Logger {
     file: File,
-    main_module_addr: usize,
+    filter_module_addr: Option<NonZeroUsize>,
 }
 
 static LOGGER: Mutex<Option<Logger>> = Mutex::new(None);
@@ -89,9 +90,11 @@ pub extern "C" fn dr_client_main(
         .map(Cow::from)
         .unwrap_or_else(|| fallback_file_name().into());
 
+    let filter = get_arg_value(&args, "filter") == Some("");
+
     let logger = Logger {
         file: File::create(file_name.as_ref()).expect("should be able to create file"),
-        main_module_addr: main_module_start_addr(),
+        filter_module_addr: filter.then(main_module_start_addr),
     };
 
     *LOGGER.lock() = Some(logger);
@@ -102,7 +105,7 @@ pub extern "C" fn exit_event() {
     let _ = LOGGER.lock().take();
 }
 
-fn main_module_start_addr() -> usize {
+fn main_module_start_addr() -> NonZeroUsize {
     let main_module = NonNull::new(unsafe { dr_get_main_module() })
         .expect("should be nonnull");
 
@@ -110,5 +113,5 @@ fn main_module_start_addr() -> usize {
 
     unsafe { dr_free_module_data(main_module.as_ptr()) };
 
-    addr
+    NonZeroUsize::new(addr).expect("addr couldn't have been nullptr")
 }
