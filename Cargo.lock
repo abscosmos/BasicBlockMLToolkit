@@ -88,6 +88,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "core"
+version = "0.1.0"
+
+[[package]]
 name = "dynamorio-sys"
 version = "11.90.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
