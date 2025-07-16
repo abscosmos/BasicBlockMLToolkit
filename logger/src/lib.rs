@@ -24,13 +24,30 @@ static LOGGER: Mutex<Option<Logger>> = Mutex::new(None);
 /// - `argv` should point to `argc` number of valid null terminated c strings
 /// - the array pointed to by `argv` & the c strings should be
 /// valid for the entire duration of the program (`'static`)
-unsafe fn collect_args<'a>(argc: c_int, argv: *const *const c_char) -> impl Iterator<Item=Cow<'static, str>> {
+unsafe fn collect_args<'a>(argc: c_int, argv: *const *const c_char) -> impl Iterator<Item=Cow<'static, str>> + Clone {
     let args = unsafe { slice::from_raw_parts(argv, argc as _) };
 
     args.into_iter()
         .map(|&ptr|
             unsafe { CStr::from_ptr(ptr) }.to_string_lossy()
         )
+}
+
+// TODO: replace this with some argument parsing library
+fn get_arg_value<'a, T: AsRef<str> + 'a>(args: impl IntoIterator<Item=&'a T>, arg: &str) -> Option<&'a str> {
+    let found = args.into_iter()
+        .map(AsRef::as_ref)
+        .find(|s| s.starts_with('-') && s[1..].starts_with(arg))?;
+
+    let trim = &found[arg.len() + 1..];
+
+    if trim.starts_with("=") {
+        let val = &trim[1..];
+
+        (!val.is_empty()).then_some(val)
+    } else {
+        trim.is_empty().then_some(trim)
+    }
 }
 
 fn fallback_file_name() -> String {
@@ -64,9 +81,12 @@ pub extern "C" fn dr_client_main(
     }
 
     // SAFETY: args come from main, valid, static lifetime
-    // TODO: sanitize file name?
-    let file_name = unsafe { collect_args(argc, argv) }
-        .nth(1)
+    let args = unsafe { collect_args(argc, argv) }
+        .collect::<Box<_>>();
+
+    // TODO: sanitize file name
+    let file_name = get_arg_value(&args, "file")
+        .map(Cow::from)
         .unwrap_or_else(|| fallback_file_name().into());
 
     let logger = Logger {
