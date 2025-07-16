@@ -19,3 +19,4 @@ rust-project.json
 
 .idea/
 vendor/
+*.log
