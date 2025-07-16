@@ -4,7 +4,7 @@ use std::ffi::{c_char, c_int, c_void, CStr};
 use std::fs::File;
 use std::ptr::NonNull;
 use std::slice;
-use dynamorio_sys::{bool_, client_id_t, dr_emit_flags_t, dr_get_application_name, dr_lookup_module, dr_module_preferred_name, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, instr_get_app_pc, instrlist_first_app, instrlist_t};
+use dynamorio_sys::{bool_, client_id_t, dr_emit_flags_t, dr_get_application_name, dr_lookup_module, dr_module_preferred_name, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, instr_disassemble_to_buffer, instr_get_app_pc, instrlist_first_app, instrlist_t};
 use parking_lot::Mutex;
 
 pub mod instruction;
@@ -124,4 +124,21 @@ pub unsafe extern "C" fn basic_block_event(
     writeln!(file, "<{module_name}> + {rel_addr:x}").expect("failed to write to log file");
 
     dr_emit_flags_t::DR_EMIT_DEFAULT
+}
+
+fn debug_instr_str(dr_ctx: *mut c_void, instr: &mut instr_t) -> String {
+    let mut buf = vec![0; 256];
+
+    unsafe {
+        instr_disassemble_to_buffer(
+            dr_ctx,
+            instr,
+            buf.as_mut_ptr(),
+            buf.len()
+        );
+    }
+
+    unsafe { CStr::from_ptr(buf.as_ptr()) }
+        .to_string_lossy()
+        .into()
 }
