@@ -7,6 +7,8 @@ use std::slice;
 use dynamorio_sys::{bool_, client_id_t, dr_emit_flags_t, dr_get_application_name, dr_lookup_module, dr_module_preferred_name, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, instr_get_app_pc, instrlist_first_app, instrlist_t};
 use parking_lot::Mutex;
 
+pub mod instruction;
+
 #[unsafe(no_mangle)]
 pub static _USES_DR_VERSION_: c_int = dynamorio_sys::_USES_DR_VERSION_;
 
