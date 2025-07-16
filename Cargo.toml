@@ -1,7 +1,8 @@
 [workspace]
 resolver = "3"
 members = [
-    "logger"
+    "core",
+    "logger",
 ]
 
 [workspace.package]
