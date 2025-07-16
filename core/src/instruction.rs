@@ -32,3 +32,23 @@ pub enum IndexRegScale {
     Four = 4,
     Eight = 8,
 }
+
+impl IndexRegScale {
+    pub fn from_u8(scale: u8) -> Option<Self> {
+        let ret = match scale {
+            0 => Self::None,
+            1 => Self::One,
+            2 => Self::Two,
+            4 => Self::Four,
+            8 => Self::Eight,
+            _ => return None,
+        };
+
+        debug_assert_eq!(
+            ret as u8, scale,
+            "repr of IndexRegScale should be same as scale",
+        );
+
+        Some(ret)
+    }
+}
