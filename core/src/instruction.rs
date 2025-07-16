@@ -4,9 +4,9 @@ pub type RegisterId = u16;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Instruction {
-    opcode: u16,
-    src: Box<[Operand]>,
-    dst: Box<[Operand]>,
+    pub opcode: u16,
+    pub src: Box<[Operand]>,
+    pub dst: Box<[Operand]>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
