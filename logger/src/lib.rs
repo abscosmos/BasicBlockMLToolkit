@@ -97,6 +97,8 @@ pub extern "C" fn dr_client_main(
         filter_module_addr: filter.then(main_module_start_addr),
     };
 
+    println!("Saving logs to \"{file_name}\".");
+
     *LOGGER.lock() = Some(logger);
 }
 
