@@ -2,7 +2,7 @@ use std::ffi::{c_int, c_uint};
 use dynamorio_sys::{instr_get_dst, instr_get_opcode, instr_get_src, instr_num_dsts, instr_num_srcs, instr_t, opnd_get_addr, opnd_get_base, opnd_get_disp, opnd_get_immed_float, opnd_get_immed_int, opnd_get_immed_int64, opnd_get_index, opnd_get_pc, opnd_get_reg, opnd_get_scale, opnd_is_immed, opnd_is_immed_float, opnd_is_immed_int, opnd_is_immed_int64, opnd_is_memory_reference, opnd_is_pc, opnd_is_reg, opnd_is_rel_addr, opnd_t};
 use logger_core::{IndexRegScale, Instruction, Operand};
 
-fn make_instruction(instr: &mut instr_t) -> Instruction {
+pub fn make_instruction(instr: &mut instr_t) -> Instruction {
     let opcode = unsafe { instr_get_opcode(instr) } as _;
 
     unsafe fn collect_operands(
