@@ -10,3 +10,5 @@ crate-type = ["cdylib"]
 dynamorio-sys = "11.90.1"
 parking_lot = "0.12.4"
 logger_core = { path = "../core", package = "core" }
+hashbrown = { version = "0.15.4", features = ["serde"] }
+serde = { version = "1.0.219", features = ["derive"] }
