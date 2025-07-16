@@ -4,8 +4,9 @@ use std::ffi::{c_char, c_int, c_void, CStr};
 use std::fs::File;
 use std::ptr::NonNull;
 use std::slice;
-use dynamorio_sys::{bool_, client_id_t, dr_emit_flags_t, dr_get_application_name, dr_lookup_module, dr_module_preferred_name, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, instr_disassemble_to_buffer, instr_get_app_pc, instrlist_first_app, instrlist_t};
+use dynamorio_sys::{bool_, client_id_t, dr_emit_flags_t, dr_get_application_name, dr_lookup_module, dr_module_preferred_name, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, instr_disassemble_to_buffer, instr_get_app_pc, instr_get_next_app, instr_t, instrlist_first_app, instrlist_t};
 use parking_lot::Mutex;
+use crate::instruction::make_instruction;
 
 pub mod instruction;
 
@@ -81,7 +82,7 @@ pub extern "C" fn exit_event() {
 }
 
 pub unsafe extern "C" fn basic_block_event(
-    _dr_ctx: *mut c_void,
+    dr_ctx: *mut c_void,
     _tag: *mut c_void,
     basic_block: *mut instrlist_t,
     _for_trace: bool_,
@@ -122,6 +123,22 @@ pub unsafe extern "C" fn basic_block_event(
         .file;
 
     writeln!(file, "<{module_name}> + {rel_addr:x}").expect("failed to write to log file");
+
+    // log every instruction
+    let mut instr = first_instr;
+
+    while !instr.is_null() {
+        // isn't null, dynamorio responsibility to ensure valid & well aligned
+        let instr_ref = unsafe { &mut *instr };
+
+        let debug_str = debug_instr_str(dr_ctx, instr_ref);
+
+        let instruction = make_instruction(instr_ref);
+
+        writeln!(file, "{debug_str}\n{instruction:?}\n").expect("shouldn't fail to write to file");
+
+        instr = unsafe { instr_get_next_app(instr) };
+    }
 
     dr_emit_flags_t::DR_EMIT_DEFAULT
 }
