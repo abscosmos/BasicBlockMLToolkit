@@ -1,7 +1,7 @@
 use std::io::Write as _;
 use std::ffi::{c_void, CStr};
 use std::ptr::NonNull;
-use dynamorio_sys::{bool_, dr_emit_flags_t, dr_lookup_module, dr_module_preferred_name, instr_disassemble_to_buffer, instr_get_app_pc, instr_get_next_app, instr_t, instrlist_first_app, instrlist_t};
+use dynamorio_sys::{bool_, dr_emit_flags_t, dr_free_module_data, dr_lookup_module, dr_module_preferred_name, instr_disassemble_to_buffer, instr_get_app_pc, instr_get_next_app, instr_t, instrlist_first_app, instrlist_t};
 use crate::instruction::make_instruction;
 use crate::LOGGER;
 
@@ -63,6 +63,9 @@ pub unsafe extern "C" fn basic_block(
 
         instr = unsafe { instr_get_next_app(instr) };
     }
+
+    // free module data
+    unsafe { dr_free_module_data(module.as_ptr()) };
 
     dr_emit_flags_t::DR_EMIT_DEFAULT
 }
