@@ -2,14 +2,14 @@ use serde::{Serialize, Deserialize};
 
 pub type RegisterId = u16;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Instruction {
     pub opcode: u16,
     pub src: Box<[Operand]>,
     pub dst: Box<[Operand]>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum Operand {
     ImmediateInt(i64),
     ImmediateFloat(f32),
@@ -23,7 +23,7 @@ pub enum Operand {
 }
 
 #[repr(u8)]
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub enum IndexRegScale {
     // FIXME: this is only here for testing, remove it
     None = 0,
