@@ -29,6 +29,10 @@ pub unsafe extern "C" fn basic_block(
 
     let module_start = unsafe { (*module.as_ptr()).__bindgen_anon_1.start };
 
+    if logger.filter_module_addr.is_some_and(|addr| addr.get() != module_start.addr()) {
+        return dr_emit_flags_t::DR_EMIT_DEFAULT;
+    }
+
     assert!(
         start_pc > module_start,
         "first instruction should be after the start of the module"
