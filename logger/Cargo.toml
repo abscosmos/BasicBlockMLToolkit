@@ -1,0 +1,10 @@
+[package]
+name = "logger"
+version = "0.1.0"
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+dynamorio-sys = "11.90.1"
