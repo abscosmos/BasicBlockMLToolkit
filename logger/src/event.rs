@@ -12,6 +12,9 @@ pub unsafe extern "C" fn basic_block(
     _for_trace: bool_,
     _translating: bool_,
 ) -> dr_emit_flags_t {
+    let mut logger_lock = LOGGER.lock();
+    let logger = logger_lock.as_mut().expect("logger should be initialized");
+
     let first_instr = unsafe { instrlist_first_app(basic_block) };
 
     // address of first instruction
@@ -39,14 +42,7 @@ pub unsafe extern "C" fn basic_block(
         ptr => unsafe { CStr::from_ptr(ptr) }.to_string_lossy(),
     };
 
-    let mut logger_lock = LOGGER.lock();
-
-    let file = &mut logger_lock
-        .as_mut()
-        .expect("logger should be initialized")
-        .file;
-
-    writeln!(file, "<{module_name}> + {rel_addr:x}").expect("failed to write to log file");
+    writeln!(logger.file, "<{module_name}> + {rel_addr:x}").expect("failed to write to log file");
 
     // log every instruction
     let mut instr = first_instr;
@@ -59,7 +55,7 @@ pub unsafe extern "C" fn basic_block(
 
         let instruction = make_instruction(instr_ref);
 
-        writeln!(file, "{debug_str}\n{instruction:?}\n").expect("shouldn't fail to write to file");
+        writeln!(logger.file, "{debug_str}\n{instruction:?}\n").expect("shouldn't fail to write to file");
 
         instr = unsafe { instr_get_next_app(instr) };
     }
