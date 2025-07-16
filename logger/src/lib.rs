@@ -4,7 +4,7 @@ use std::ffi::{c_char, c_int, c_void, CStr};
 use std::fs::File;
 use std::ptr::NonNull;
 use std::slice;
-use dynamorio_sys::{bool_, client_id_t, dr_emit_flags_t, dr_lookup_module, dr_module_preferred_name, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, instr_get_app_pc, instrlist_first_app, instrlist_t};
+use dynamorio_sys::{bool_, client_id_t, dr_emit_flags_t, dr_get_application_name, dr_lookup_module, dr_module_preferred_name, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, instr_get_app_pc, instrlist_first_app, instrlist_t};
 use parking_lot::Mutex;
 
 #[unsafe(no_mangle)]
@@ -28,6 +28,22 @@ unsafe fn collect_args<'a>(argc: c_int, argv: *const *const c_char) -> impl Iter
         .map(|&ptr|
             unsafe { CStr::from_ptr(ptr) }.to_string_lossy()
         )
+}
+
+fn fallback_file_name() -> String {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("epoch must be before any current time")
+        .as_secs();
+
+    let name = match unsafe { dr_get_application_name() } {
+        ptr if ptr.is_null() => "unknown".into(),
+        ptr => unsafe { CStr::from_ptr(ptr) }.to_string_lossy(),
+    };
+
+    format!("{name}_trace-{timestamp:x}.log")
 }
 
 #[unsafe(no_mangle)]
