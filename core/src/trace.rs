@@ -12,10 +12,6 @@ pub struct TraceData {
 
 impl TraceData {
     pub fn summary(&self) -> TraceSummary {
-        fn unique_ct<T: Hash + Eq>(iter: impl IntoIterator<Item=T>) -> usize {
-            iter.into_iter().collect::<HashSet<_>>().len()
-        }
-
         let (targeted, unique_apps) = if !self.filter {
             let iter = self.blocks
                 .iter()
@@ -64,4 +60,8 @@ pub struct BlockCountStats {
     num_blocks: usize,
     num_unique_blocks: usize,
     num_unique_symbolized: usize,
+}
+
+fn unique_ct<T: Hash + Eq>(iter: impl IntoIterator<Item=T>) -> usize {
+    iter.into_iter().collect::<HashSet<_>>().len()
 }
