@@ -133,12 +133,20 @@ pub extern "C" fn exit_event() {
     let binary = postcard::to_allocvec(&trace)
         .expect("trace data should be safely serializable");
 
+    if let Some(parent) = save_path.parent() {
+        fs::create_dir_all(parent).expect("should be able to create parent directories");
+    }
+
     fs::write(&save_path, binary)
         .expect("should be able to write to file");
 
     let summary = trace.summary();
 
     if let Some(incremental_path) = incremental {
+        if let Some(parent) = incremental_path.parent() {
+            fs::create_dir_all(parent).expect("should be able to create parent directories");
+        }
+
         write_incremental(trace.blocks.into_values(), &incremental_path).unwrap();
         dr_println!("Saved incremental to \"{}\".", incremental_path.display());
     }
