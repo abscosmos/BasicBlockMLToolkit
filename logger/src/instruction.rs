@@ -35,7 +35,7 @@ fn make_operand(opnd: opnd_t) -> Operand {
             } else if opnd_is_immed_int64(opnd) != 0 {
                 Operand::ImmediateInt(opnd_get_immed_int64(opnd))
             } else if opnd_is_immed_float(opnd) != 0 {
-                Operand::ImmediateFloat(opnd_get_immed_float(opnd))
+                Operand::ImmediateFloat(opnd_get_immed_float(opnd).into())
             } else {
                 panic!("Unknown operand type! {opnd:?}");
             }

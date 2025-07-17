@@ -1,18 +1,23 @@
 use serde::{Serialize, Deserialize};
 
+pub type OrdF32 = ordered_float::OrderedFloat<f32>;
+
 pub type RegisterId = u16;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Instruction {
     pub opcode: u16,
     pub src: Box<[Operand]>,
     pub dst: Box<[Operand]>,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Operand {
     ImmediateInt(i64),
-    ImmediateFloat(f32),
+    // TODO: not sure if ordered float is what we want here
+    //  might be better to have wrapper that hashes & compares
+    //  for equality by bits
+    ImmediateFloat(OrdF32),
     Register(RegisterId),
     MemoryReference {
         base: RegisterId,
@@ -23,7 +28,7 @@ pub enum Operand {
 }
 
 #[repr(u8)]
-#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum IndexRegScale {
     // FIXME: this is only here for testing, remove it
     None = 0,
