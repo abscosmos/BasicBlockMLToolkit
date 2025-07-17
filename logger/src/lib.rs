@@ -10,6 +10,7 @@ use parking_lot::Mutex;
 pub mod trace;
 pub mod instruction;
 mod event;
+mod log;
 
 #[unsafe(no_mangle)]
 pub static _USES_DR_VERSION_: c_int = dynamorio_sys::_USES_DR_VERSION_;
