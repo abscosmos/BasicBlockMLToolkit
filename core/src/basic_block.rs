@@ -1,10 +1,11 @@
+use std::num::NonZeroUsize;
 use serde::{Deserialize, Serialize};
 use crate::Instruction;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct Application {
     pub name: Box<str>,
-    pub address: usize,
+    pub address: NonZeroUsize,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
