@@ -16,6 +16,7 @@ Run the logger:
 ```bash
 # -file=<save path> to specify the output trace path
 # -filter to only save basic blocks from the application specified, ignoring any from other libraries
+# if you built in release mode, replace 'debug' with 'release' in the path to the shared object
 $ ./vendor/drio-11.90/bin64/drrun -c ./target/debug/liblogger.so [-file=<save path>] [-filter] -- <process name>
 ```
 For example, to trace `ls`:
@@ -45,7 +46,7 @@ TraceSummary {
     ),
 }
 ```
-> The `.trace` file is a binary file, and to read it needs to be deserialized.
+> The `.trace` file is a binary file, and to read it, it needs to be deserialized.
 
 ## Setup
 First, clone this repository:
