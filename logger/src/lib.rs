@@ -1,11 +1,13 @@
 use std::borrow::Cow;
 use std::ffi::{c_char, c_int, CStr};
-use std::fs::File;
-use std::num::NonZeroUsize;
+use std::path::PathBuf;
 use std::ptr::NonNull;
-use std::slice;
-use dynamorio_sys::{client_id_t, dr_free_module_data, dr_get_application_name, dr_get_main_module, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, module_data_t};
+use std::{fs, slice};
+use dynamorio_sys::{client_id_t, dr_free_module_data, dr_get_application_name, dr_get_main_module, dr_module_preferred_name, dr_printf, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, module_data_t};
+use hashbrown::HashMap;
 use parking_lot::Mutex;
+use logger_core::Application;
+use crate::trace::TraceData;
 
 pub mod trace;
 pub mod instruction;
@@ -16,8 +18,8 @@ mod log;
 pub static _USES_DR_VERSION_: c_int = dynamorio_sys::_USES_DR_VERSION_;
 
 struct Logger {
-    file: File,
-    filter_module_addr: Option<NonZeroUsize>,
+    trace: TraceData,
+    save_path: PathBuf,
 }
 
 static LOGGER: Mutex<Option<Logger>> = Mutex::new(None);
@@ -94,9 +96,20 @@ pub extern "C" fn dr_client_main(
 
     let filter = get_arg_value(&args, "filter") == Some("");
 
+    let main_module_raw = NonNull::new(unsafe { dr_get_main_module() })
+        .expect("should be nonnull");
+
+    let target_application = module_to_application(unsafe { main_module_raw.as_ref() });
+
+    unsafe { dr_free_module_data(main_module_raw.as_ptr()); }
+
     let logger = Logger {
-        file: File::create(file_name.as_ref()).expect("should be able to create file"),
-        filter_module_addr: filter.then(main_module_start_addr),
+        trace: TraceData {
+            targeted: target_application,
+            blocks: HashMap::default(),
+            filter,
+        },
+        save_path: file_name.as_ref().into(),
     };
 
     *LOGGER.lock() = Some(logger);
@@ -104,16 +117,31 @@ pub extern "C" fn dr_client_main(
 
 pub extern "C" fn exit_event() {
     // ensure Drop::drop runs for Logger
-    let _ = LOGGER.lock().take();
+    let Logger { trace, save_path } = LOGGER.lock()
+        .take()
+        .expect("logger should be initialized");
+
+    let binary = postcard::to_allocvec(&trace)
+        .expect("trace data should be safely serializable");
+
+    fs::write(&save_path, binary)
+        .expect("should be able to write to file");
+
+    dr_println!("Saved trace to \"{}\".", save_path.display());
 }
 
-fn main_module_start_addr() -> NonZeroUsize {
-    let main_module = NonNull::new(unsafe { dr_get_main_module() })
-        .expect("should be nonnull");
+/// this does not semantically take ownership of `module`,
+/// and as such will not free it
+pub fn module_to_application(module: &module_data_t) -> Application {
+    let name = match unsafe { dr_module_preferred_name(module) } {
+        ptr if ptr.is_null() => "{unknown}".into(),
+        ptr => unsafe { CStr::from_ptr(ptr) }.to_string_lossy().into(),
+    };
 
-    let addr = unsafe { (*main_module.as_ptr()).__bindgen_anon_1.start.addr() };
+    let address = unsafe { module.__bindgen_anon_1.start }
+        .addr()
+        .try_into()
+        .expect("module start addr shouldn't be nullptr");
 
-    unsafe { dr_free_module_data(main_module.as_ptr()) };
-
-    NonZeroUsize::new(addr).expect("addr couldn't have been nullptr")
+    Application { name, address }
 }

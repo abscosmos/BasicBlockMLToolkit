@@ -1,9 +1,9 @@
-use std::io::Write as _;
 use std::ffi::{c_void, CStr};
 use std::ptr::NonNull;
-use dynamorio_sys::{bool_, dr_emit_flags_t, dr_free_module_data, dr_lookup_module, dr_module_preferred_name, instr_disassemble_to_buffer, instr_get_app_pc, instr_get_next_app, instr_t, instrlist_first_app, instrlist_t};
+use dynamorio_sys::{bool_, byte as dr_byte, dr_emit_flags_t, dr_free_module_data, dr_lookup_module, dr_memory_is_in_client, instr_disassemble_to_buffer, instr_get_app_pc, instr_get_next_app, instr_t, instrlist_first_app, instrlist_t};
+use logger_core::{BasicBlock, BasicBlockLocation as BlockLoc};
 use crate::instruction::make_instruction;
-use crate::LOGGER;
+use crate::{module_to_application, LOGGER};
 
 pub unsafe extern "C" fn basic_block(
     dr_ctx: *mut c_void,
@@ -20,6 +20,10 @@ pub unsafe extern "C" fn basic_block(
     // address of first instruction
     let start_pc = unsafe { instr_get_app_pc(first_instr) };
 
+    if unsafe { dr_memory_is_in_client(start_pc) } != 0 {
+        return dr_emit_flags_t::DR_EMIT_DEFAULT;
+    }
+
     // get the module (executable / library) of the basic block
     let Some(module) = NonNull::new(
         unsafe { dr_lookup_module(start_pc) }
@@ -27,45 +31,54 @@ pub unsafe extern "C" fn basic_block(
         return dr_emit_flags_t::DR_EMIT_DEFAULT;
     };
 
-    let module_start = unsafe { (*module.as_ptr()).__bindgen_anon_1.start };
+    let application = module_to_application(unsafe { module.as_ref() });
 
-    if logger.filter_module_addr.is_some_and(|addr| addr.get() != module_start.addr()) {
+    if logger.trace.filter && logger.trace.targeted.address == application.address {
         return dr_emit_flags_t::DR_EMIT_DEFAULT;
     }
 
     assert!(
-        start_pc > module_start,
+        start_pc.addr() > application.address.get(),
         "first instruction should be after the start of the module"
     );
 
-    // relative address from start of module
-    let rel_addr = unsafe { start_pc.offset_from(module_start) } as usize;
+    assert_eq!(
+        size_of::<dr_byte>(), 1,
+        "relative address arithmetic assumes byte is one byte"
+    );
 
-    let module_name = match unsafe { dr_module_preferred_name(module.as_ptr()) } {
-        ptr if ptr.is_null() => "unknown".into(),
-        ptr => unsafe { CStr::from_ptr(ptr) }.to_string_lossy(),
+
+    let block_loc = BlockLoc {
+        relative_addr: start_pc.addr() - application.address.get(),
+        application,
     };
 
-    writeln!(logger.file, "<{module_name}> + {rel_addr:x}").expect("failed to write to log file");
+    if logger.trace.blocks.contains_key(&block_loc) {
+        return dr_emit_flags_t::DR_EMIT_DEFAULT;
+    }
+
+    let mut instructions = Vec::new();
 
     // log every instruction
     let mut instr = first_instr;
 
-    while !instr.is_null() {
-        // isn't null, dynamorio responsibility to ensure valid & well aligned
-        let instr_ref = unsafe { &mut *instr };
+    while let Some(instr_ref) = unsafe { instr.as_mut() } {
+        let _debug_str = debug_instr_str(dr_ctx, instr_ref);
 
-        let debug_str = debug_instr_str(dr_ctx, instr_ref);
-
-        let instruction = make_instruction(instr_ref);
-
-        writeln!(logger.file, "{debug_str}\n{instruction:?}\n").expect("shouldn't fail to write to file");
+        instructions.push(make_instruction(instr_ref));
 
         instr = unsafe { instr_get_next_app(instr) };
     }
 
     // free module data
     unsafe { dr_free_module_data(module.as_ptr()) };
+
+    logger.trace.blocks.insert(
+        block_loc,
+        BasicBlock {
+            instructions: instructions.into_boxed_slice()
+        }
+    );
 
     dr_emit_flags_t::DR_EMIT_DEFAULT
 }
