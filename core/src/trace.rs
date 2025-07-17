@@ -39,17 +39,17 @@ impl TraceData {
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TraceSummary {
-    application: Application,
-    counts: BlockCountStats,
-    targeted: Option<BlockCountStats>,
-    unique_apps: Option<usize>,
+    pub application: Application,
+    pub counts: BlockCountStats,
+    pub targeted: Option<BlockCountStats>,
+    pub unique_apps: Option<usize>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
 pub struct BlockCountStats {
-    num_blocks: usize,
-    num_unique_blocks: usize,
-    num_unique_symbolized: usize,
+    pub num_blocks: usize,
+    pub num_unique_blocks: usize,
+    pub num_unique_symbolized: usize,
 }
 
 impl BlockCountStats {
