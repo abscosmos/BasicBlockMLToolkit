@@ -68,7 +68,7 @@ fn fallback_file_name() -> String {
         ptr => unsafe { CStr::from_ptr(ptr) }.to_string_lossy(),
     };
 
-    format!("{name}_trace-{timestamp:x}.log")
+    format!("{name}_trace-{timestamp:x}.trace")
 }
 
 #[unsafe(no_mangle)]
