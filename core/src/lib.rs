@@ -5,4 +5,7 @@ pub use basic_block::*;
 mod symbolize;
 pub use symbolize::*;
 mod trace;
+
 pub use trace::*;
+mod incremental;
+pub use incremental::*;
