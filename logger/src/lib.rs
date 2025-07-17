@@ -128,6 +128,7 @@ pub extern "C" fn exit_event() {
         .expect("should be able to write to file");
 
     dr_println!("Saved trace to \"{}\".", save_path.display());
+    dr_println!("Summary:\n{:#?}", trace.summary());
 }
 
 /// this does not semantically take ownership of `module`,
