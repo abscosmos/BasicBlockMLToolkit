@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 use std::ffi::{c_char, c_int, CStr};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::ptr::NonNull;
 use std::{fs, slice};
 use dynamorio_sys::{client_id_t, dr_free_module_data, dr_get_application_name, dr_get_main_module, dr_module_preferred_name, dr_printf, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, module_data_t};
@@ -55,7 +55,7 @@ fn get_arg_value<'a, T: AsRef<str> + 'a>(args: impl IntoIterator<Item=&'a T>, ar
     }
 }
 
-fn fallback_file_name() -> String {
+fn fallback_file_name() -> PathBuf {
     use std::time::{SystemTime, UNIX_EPOCH};
 
     let timestamp = SystemTime::now()
@@ -68,7 +68,7 @@ fn fallback_file_name() -> String {
         ptr => unsafe { CStr::from_ptr(ptr) }.to_string_lossy(),
     };
 
-    format!("{name}_trace-{timestamp:x}.trace")
+    format!("{name}_trace-{timestamp:x}.trace").into()
 }
 
 #[unsafe(no_mangle)]
@@ -91,7 +91,7 @@ pub extern "C" fn dr_client_main(
 
     // TODO: sanitize file name
     let file_name = get_arg_value(&args, "file")
-        .map(Cow::from)
+        .map(|s| Cow::Borrowed(Path::new(s)))
         .unwrap_or_else(|| fallback_file_name().into());
 
     let filter = get_arg_value(&args, "filter") == Some("");
