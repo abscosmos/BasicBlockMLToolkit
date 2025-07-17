@@ -68,7 +68,7 @@ fn fallback_file_name() -> PathBuf {
         ptr => unsafe { CStr::from_ptr(ptr) }.to_string_lossy(),
     };
 
-    format!("{name}_trace-{timestamp:x}.trace").into()
+    format!("traces/{name}_trace-{timestamp:x}.trace").into()
 }
 
 #[unsafe(no_mangle)]
