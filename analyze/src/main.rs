@@ -4,7 +4,7 @@ use std::ffi::OsStr;
 use std::num::NonZeroUsize;
 use std::path::Path;
 use anyhow::Context;
-use logger_core::{Application, TraceData};
+use logger_core::{Application, BlockCountStats, TraceData};
 
 fn main() {
     let mut traces = load_traces(None::<&[&str]>).unwrap();
@@ -15,9 +15,9 @@ fn main() {
         println!("{:#?}", trace.summary());
     }
 
-    let naive_merge = naive_merge(&traces);
+    let naive_merge = naive_stats(&traces);
 
-    println!("Naive merge:\n{:#?}", naive_merge.summary());
+    println!("Naive merge:\n{:#?}", naive_merge);
 }
 
 fn load_traces(applications: Option<&[impl AsRef<str>]>) -> anyhow::Result<Vec<TraceData>> {
@@ -48,21 +48,12 @@ fn load_traces(applications: Option<&[impl AsRef<str>]>) -> anyhow::Result<Vec<T
     Ok(traces)
 }
 
-fn naive_merge<'a>(traces: impl IntoIterator<Item=&'a TraceData>) -> TraceData {
-    let null_application = Application {
-        name: "".into(),
-        address: NonZeroUsize::MAX,
-    };
-
+fn naive_stats<'a>(traces: impl IntoIterator<Item=&'a TraceData>) -> BlockCountStats {
     let mut blocks = HashMap::new();
 
     for trace in traces {
         blocks.extend(trace.blocks.clone());
     }
 
-    TraceData {
-        targeted: null_application,
-        filter: true,
-        blocks,
-    }
+    BlockCountStats::from_iter(blocks.values())
 }
