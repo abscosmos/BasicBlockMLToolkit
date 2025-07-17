@@ -1,10 +1,10 @@
 use std::fs;
-use hashbrown::HashMap;
+use hashbrown::HashSet;
 use std::ffi::OsStr;
-use std::num::NonZeroUsize;
 use std::path::Path;
 use anyhow::Context;
-use logger_core::{Application, BlockCountStats, TraceData};
+use itertools::Itertools;
+use logger_core::{BlockCountStats, TraceData};
 
 fn main() {
     let mut traces = load_traces(None::<&[&str]>).unwrap();
@@ -15,9 +15,7 @@ fn main() {
         println!("{:#?}", trace.summary());
     }
 
-    let naive_merge = naive_stats(&traces);
-
-    println!("Naive merge:\n{:#?}", naive_merge);
+    println!("Stats:\n{:#?}", stats(&traces));
 }
 
 fn load_traces(applications: Option<&[impl AsRef<str>]>) -> anyhow::Result<Vec<TraceData>> {
@@ -48,12 +46,20 @@ fn load_traces(applications: Option<&[impl AsRef<str>]>) -> anyhow::Result<Vec<T
     Ok(traces)
 }
 
-fn naive_stats<'a>(traces: impl IntoIterator<Item=&'a TraceData>) -> BlockCountStats {
-    let mut blocks = HashMap::new();
+fn stats<'a>(traces: impl IntoIterator<Item=&'a TraceData>) -> BlockCountStats {
+    let traces = traces.into_iter();
+
+    let mut all_block_loc = HashSet::new();
+    let mut collective_unique = HashSet::new();
 
     for trace in traces {
-        blocks.extend(trace.blocks.clone());
+        all_block_loc.extend(trace.blocks.keys());
+        collective_unique.extend(trace.blocks.values().unique());
     }
 
-    BlockCountStats::from_iter(blocks.values())
+    BlockCountStats {
+        num_blocks: all_block_loc.len(),
+        num_unique_blocks: collective_unique.len(),
+        num_unique_symbolized: collective_unique.iter().unique_by(|b| b.symbolize()).count(),
+    }
 }
