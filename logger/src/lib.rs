@@ -7,10 +7,12 @@ use dynamorio_sys::{client_id_t, dr_free_module_data, dr_get_application_name, d
 use hashbrown::HashMap;
 use parking_lot::Mutex;
 use logger_core::{Application, TraceData};
+use crate::incremental::write_incremental;
 
 pub mod instruction;
 mod event;
 mod log;
+mod incremental;
 
 #[unsafe(no_mangle)]
 pub static _USES_DR_VERSION_: c_int = dynamorio_sys::_USES_DR_VERSION_;
@@ -18,6 +20,7 @@ pub static _USES_DR_VERSION_: c_int = dynamorio_sys::_USES_DR_VERSION_;
 struct Logger {
     trace: TraceData,
     save_path: PathBuf,
+    incremental: Option<PathBuf>,
 }
 
 static LOGGER: Mutex<Option<Logger>> = Mutex::new(None);
@@ -93,6 +96,12 @@ pub extern "C" fn dr_client_main(
         .map(|s| Cow::Borrowed(Path::new(s)))
         .unwrap_or_else(|| fallback_file_name().into());
 
+    let incremental = match get_arg_value(&args, "incremental") {
+        Some("") => Some(PathBuf::from("incremental.bin")),
+        Some(path) => Some(PathBuf::from(path)),
+        None => None,
+    };
+
     let filter = get_arg_value(&args, "filter") == Some("");
 
     let main_module_raw = NonNull::new(unsafe { dr_get_main_module() })
@@ -109,6 +118,7 @@ pub extern "C" fn dr_client_main(
             filter,
         },
         save_path: file_name.as_ref().into(),
+        incremental,
     };
 
     *LOGGER.lock() = Some(logger);
@@ -116,7 +126,7 @@ pub extern "C" fn dr_client_main(
 
 pub extern "C" fn exit_event() {
     // ensure Drop::drop runs for Logger
-    let Logger { trace, save_path } = LOGGER.lock()
+    let Logger { trace, save_path, incremental } = LOGGER.lock()
         .take()
         .expect("logger should be initialized");
 
@@ -126,8 +136,15 @@ pub extern "C" fn exit_event() {
     fs::write(&save_path, binary)
         .expect("should be able to write to file");
 
+    let summary = trace.summary();
+
+    if let Some(incremental_path) = incremental {
+        write_incremental(trace.blocks.into_values(), &incremental_path).unwrap();
+        dr_println!("Saved incremental to \"{}\".", incremental_path.display());
+    }
+
     dr_println!("Saved trace to \"{}\".", save_path.display());
-    dr_println!("Summary:\n{:#?}", trace.summary());
+    dr_println!("Summary:\n{summary:#?}");
 }
 
 /// this does not semantically take ownership of `module`,
