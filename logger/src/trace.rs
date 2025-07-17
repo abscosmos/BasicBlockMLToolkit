@@ -1,3 +1,4 @@
+use std::hash::Hash;
 use hashbrown::{HashMap, HashSet};
 use logger_core::{Application, BasicBlock, BasicBlockLocation as BlockLoc};
 use serde::{Deserialize, Serialize};
@@ -11,26 +12,30 @@ pub struct TraceData {
 
 impl TraceData {
     pub fn summary(&self) -> TraceSummary {
-        fn unique_ct<'a>(iter: impl IntoIterator<Item=&'a BasicBlock>) -> usize {
+        fn unique_ct<'a, T: Hash + Eq + 'a>(iter: impl IntoIterator<Item=&'a T>) -> usize {
             iter.into_iter().collect::<HashSet<_>>().len()
         }
 
-        let targeted = if !self.filter {
+        let (targeted, unique_apps) = if !self.filter {
             let iter = self.blocks
                 .iter()
                 .filter_map(|(k, v)|
                     (k.application == self.targeted).then_some(v)
                 );
 
+            let apps = self.blocks
+                .keys()
+                .map(|k| &k.application);
 
-            Some(
-                BlockCountStats {
-                    num_blocks: iter.clone().count(),
-                    num_unique_blocks: unique_ct(iter),
-                }
-            )
+
+            let targeted = BlockCountStats {
+                num_blocks: iter.clone().count(),
+                num_unique_blocks: unique_ct(iter),
+            };
+
+            (Some(targeted), Some(unique_ct(apps)))
         } else {
-            None
+            (None, None)
         };
 
         TraceSummary {
@@ -40,6 +45,7 @@ impl TraceData {
                 num_unique_blocks: unique_ct(self.blocks.values()),
             },
             targeted,
+            unique_apps,
         }
     }
 }
@@ -49,6 +55,7 @@ pub struct TraceSummary {
     application: Application,
     counts: BlockCountStats,
     targeted: Option<BlockCountStats>,
+    unique_apps: Option<usize>,
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Serialize, Deserialize)]
