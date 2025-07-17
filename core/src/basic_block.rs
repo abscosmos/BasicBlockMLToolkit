@@ -3,7 +3,7 @@ use crate::Instruction;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct Application {
-    pub name: String,
+    pub name: Box<str>,
     pub address: usize,
 }
 
