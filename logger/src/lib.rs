@@ -53,7 +53,7 @@ fn get_arg_value<'a, T: AsRef<str> + 'a>(args: impl IntoIterator<Item=&'a T>, ar
     }
 }
 
-// FIXME: something to do with calling this function causes stack overflow
+// FIXME: this can cause errors later if traces/ directory isn't created
 fn fallback_file_name() -> PathBuf {
     use std::time::{SystemTime, UNIX_EPOCH};
 
