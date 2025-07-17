@@ -1,5 +1,7 @@
 use serde::{Serialize, Deserialize};
 
+pub type OrdF32 = ordered_float::OrderedFloat<f32>;
+
 pub type RegisterId = u16;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -12,7 +14,10 @@ pub struct Instruction {
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Operand {
     ImmediateInt(i64),
-    ImmediateFloat(f32),
+    // TODO: not sure if ordered float is what we want here
+    //  might be better to have wrapper that hashes & compares
+    //  for equality by bits
+    ImmediateFloat(OrdF32),
     Register(RegisterId),
     MemoryReference {
         base: RegisterId,
