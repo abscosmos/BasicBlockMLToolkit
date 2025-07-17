@@ -1,7 +1,7 @@
 use std::hash::Hash;
 use hashbrown::{HashMap, HashSet};
-use logger_core::{Application, BasicBlock, BasicBlockLocation as BlockLoc};
 use serde::{Deserialize, Serialize};
+use crate::{Application, BasicBlock, BasicBlockLocation as BlockLoc};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TraceData {
