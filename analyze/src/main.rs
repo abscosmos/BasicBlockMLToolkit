@@ -10,10 +10,7 @@ fn main() {
     let mut traces = load_traces(None::<&[&str]>).unwrap();
     traces.dedup_by_key(|t| t.targeted.name.clone());
 
-    println!("Loaded traces: ");
-    for trace in &traces {
-        println!("{:#?}", trace.summary());
-    }
+    println!("Loaded traces: {:?}", traces.iter().map(|t| &t.targeted.name).collect::<Vec<_>>());
 
     println!("Stats:\n{:#?}", stats(&traces));
 }
