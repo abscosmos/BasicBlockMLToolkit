@@ -12,7 +12,8 @@ fn main() {
 
     println!("Loaded traces: {:?}", traces.iter().map(|t| &t.targeted.name).collect::<Vec<_>>());
 
-    println!("Stats:\n{:#?}", stats(&traces));
+    println!("Stats (with libraries):\n{:#?}", stats(&traces, false));
+    println!("\nStats (without libraries):\n{:#?}", stats(&traces, true));
 }
 
 fn load_traces(applications: Option<&[impl AsRef<str>]>) -> anyhow::Result<Vec<TraceData>> {
@@ -43,15 +44,18 @@ fn load_traces(applications: Option<&[impl AsRef<str>]>) -> anyhow::Result<Vec<T
     Ok(traces)
 }
 
-fn stats<'a>(traces: impl IntoIterator<Item=&'a TraceData>) -> BlockCountStats {
+fn stats<'a>(traces: impl IntoIterator<Item=&'a TraceData>, only_targeted: bool) -> BlockCountStats {
     let traces = traces.into_iter();
 
     let mut all_block_loc = HashSet::new();
     let mut collective_unique = HashSet::new();
 
     for trace in traces {
-        all_block_loc.extend(trace.blocks.keys());
-        collective_unique.extend(trace.blocks.values().unique());
+        let iter = trace.blocks.iter()
+            .filter(|(k, _)| !only_targeted || k.application == trace.targeted);
+
+        all_block_loc.extend(iter.clone().map(|kv| kv.0));
+        collective_unique.extend(iter.map(|kv| kv.1).unique());
     }
 
     BlockCountStats {
