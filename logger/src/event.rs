@@ -33,7 +33,7 @@ pub unsafe extern "C" fn basic_block(
 
     let application = module_to_application(unsafe { module.as_ref() });
 
-    if logger.trace.filter && logger.trace.targeted.address == application.address {
+    if logger.trace.filter && logger.trace.targeted.address != application.address {
         return dr_emit_flags_t::DR_EMIT_DEFAULT;
     }
 
