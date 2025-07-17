@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use crate::{IndexRegScale, RegisterId};
+use crate::{BasicBlock, IndexRegScale, Instruction, Operand, RegisterId};
 
 pub type SymRegisterId = u16;
 
@@ -40,6 +40,45 @@ impl RegisterMapping {
         } else {
             self.0.push(reg);
             (self.0.len() - 1) as _
+        }
+    }
+}
+
+impl Operand {
+    pub fn symbolize(&self, reg_map: &mut RegisterMapping) -> SymbolizedOperand {
+        use Operand as Opnd;
+        use SymbolizedOperand as SymOpnd;
+
+        match self {
+            Opnd::ImmediateInt(_) | Operand::ImmediateFloat(_) => SymOpnd::Immediate,
+            Opnd::Register(id) => SymOpnd::Register(reg_map.map(*id)),
+            Opnd::MemoryReference { base, index, .. } => {
+                SymbolizedOperand::MemoryReference {
+                    base: reg_map.map(*base),
+                    index: index.map(|(id, scale)| (reg_map.map(id), scale))
+                }
+            }
+            Opnd::Address(_) => SymOpnd::Address,
+        }
+    }
+}
+
+impl Instruction {
+    pub fn symbolize(&self, reg_map: &mut RegisterMapping) -> SymbolizedInstruction {
+        SymbolizedInstruction {
+            opcode: self.opcode,
+            src: self.src.iter().map(|op| op.symbolize(reg_map)).collect(),
+            dst: self.dst.iter().map(|op| op.symbolize(reg_map)).collect(),
+        }
+    }
+}
+
+impl BasicBlock {
+    pub fn symbolize(&self) -> SymbolizedBasicBlock {
+        let mut reg_map = RegisterMapping::default();
+
+        SymbolizedBasicBlock {
+            instructions: self.instructions.iter().map(|instr| instr.symbolize(&mut reg_map)).collect(),
         }
     }
 }
