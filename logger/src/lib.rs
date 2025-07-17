@@ -6,10 +6,8 @@ use std::{fs, slice};
 use dynamorio_sys::{client_id_t, dr_free_module_data, dr_get_application_name, dr_get_main_module, dr_module_preferred_name, dr_printf, dr_register_bb_event, dr_register_exit_event, dr_set_client_name, module_data_t};
 use hashbrown::HashMap;
 use parking_lot::Mutex;
-use logger_core::Application;
-use crate::trace::TraceData;
+use logger_core::{Application, TraceData};
 
-pub mod trace;
 pub mod instruction;
 mod event;
 mod log;
