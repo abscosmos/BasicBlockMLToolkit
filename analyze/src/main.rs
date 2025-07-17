@@ -1,25 +1,26 @@
-use std::{fs, io};
-use hashbrown::HashSet;
+use std::fs;
+use hashbrown::HashMap;
 use std::ffi::OsStr;
+use std::num::NonZeroUsize;
 use std::path::Path;
 use anyhow::Context;
-use itertools::Itertools;
-use logger_core::TraceData;
+use logger_core::{Application, TraceData};
 
 fn main() {
-    let traces = load_traces(&["ls", "cd"]).unwrap();
-
-    let traces = traces.iter()
-        .unique_by(|t| &t.targeted.name)
-        .collect::<Vec<_>>();
+    let mut traces = load_traces(None::<&[&str]>).unwrap();
+    traces.dedup_by_key(|t| t.targeted.name.clone());
 
     println!("Loaded traces: ");
     for trace in &traces {
         println!("{:#?}", trace.summary());
     }
+
+    let naive_merge = naive_merge(&traces);
+
+    println!("Naive merge:\n{:#?}", naive_merge.summary());
 }
 
-fn load_traces(applications: &[impl AsRef<str>]) -> anyhow::Result<Vec<TraceData>> {
+fn load_traces(applications: Option<&[impl AsRef<str>]>) -> anyhow::Result<Vec<TraceData>> {
     let search_dir = Path::new("./traces");
 
     let mut traces = Vec::new();
@@ -31,11 +32,9 @@ fn load_traces(applications: &[impl AsRef<str>]) -> anyhow::Result<Vec<TraceData
             && path.extension() == Some(OsStr::new("trace"))
             && path.file_name().map(OsStr::to_str)
                 .flatten()
-                .is_some_and(|file_name|
-                    applications.iter().any(|app|
-                        file_name.starts_with(app.as_ref())
-                    )
-                )
+                .is_some_and(|file_name| applications.is_none_or(|apps|
+                    apps.iter().any(|app| file_name.starts_with(app.as_ref())
+                )))
         {
             let bytes = fs::read(path).context("failed to read bytes")?;
 
@@ -47,4 +46,23 @@ fn load_traces(applications: &[impl AsRef<str>]) -> anyhow::Result<Vec<TraceData
     }
 
     Ok(traces)
+}
+
+fn naive_merge<'a>(traces: impl IntoIterator<Item=&'a TraceData>) -> TraceData {
+    let null_application = Application {
+        name: "".into(),
+        address: NonZeroUsize::MAX,
+    };
+
+    let mut blocks = HashMap::new();
+
+    for trace in traces {
+        blocks.extend(trace.blocks.clone());
+    }
+
+    TraceData {
+        targeted: null_application,
+        filter: true,
+        blocks,
+    }
 }
