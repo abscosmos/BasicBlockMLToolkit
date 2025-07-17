@@ -3,16 +3,20 @@ use hashbrown::HashSet;
 use std::ffi::OsStr;
 use std::path::Path;
 use anyhow::Context;
+use itertools::Itertools;
 use logger_core::TraceData;
 
 fn main() {
     let traces = load_traces(&["ls", "cd"]).unwrap();
 
-    let trace_apps = traces.iter()
-        .map(|t| t.targeted.name.as_ref())
-        .collect::<HashSet<_>>();
+    let traces = traces.iter()
+        .unique_by(|t| &t.targeted.name)
+        .collect::<Vec<_>>();
 
-    println!("Loaded traces for {trace_apps:?}");
+    println!("Loaded traces: ");
+    for trace in &traces {
+        println!("{:#?}", trace.summary());
+    }
 }
 
 fn load_traces(applications: &[impl AsRef<str>]) -> anyhow::Result<Vec<TraceData>> {
