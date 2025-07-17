@@ -4,14 +4,14 @@ pub type OrdF32 = ordered_float::OrderedFloat<f32>;
 
 pub type RegisterId = u16;
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Instruction {
     pub opcode: u16,
     pub src: Box<[Operand]>,
     pub dst: Box<[Operand]>,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub enum Operand {
     ImmediateInt(i64),
     // TODO: not sure if ordered float is what we want here

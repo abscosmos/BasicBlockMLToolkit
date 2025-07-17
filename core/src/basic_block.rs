@@ -14,7 +14,7 @@ pub struct BasicBlockLocation {
     pub relative_addr: usize,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct BasicBlock {
     pub instructions: Box<[Instruction]>,
 }
