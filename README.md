@@ -55,10 +55,6 @@ git clone https://github.com/abscosmos/BasicBlockMLToolkit.git
 cd BasicBlockMLToolkit
 ```
 
-The logger (`/logger`) uses [`dynamorio-sys`](https://crates.io/crates/dynamorio-sys) for FFI bindings to DynamoRIO.
-To generate the bindings, `dynamorio-sys` compiles DynamoRIO 11.90 from [source](https://github.com/DynamoRIO/dynamorio) using [`cc`](https://crates.io/crates/cc), and then uses [`bindgen`](https://crates.io/crates/bindgen).
-Because of this, you need the necessary build tools to build DynamoRIO, which are listed [here](https://dynamorio.org/page_building.html).
-
 Install the necessary packages:
 ```bash
 # cc & bindgen build DynamoRIO from source before generating bindings, so tools for building DynamoRIO are necessary
