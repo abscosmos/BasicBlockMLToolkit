@@ -16,5 +16,5 @@ pub struct BasicBlockLocation {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BasicBlock {
-    pub instructions: Box<Instruction>,
+    pub instructions: Box<[Instruction]>,
 }
