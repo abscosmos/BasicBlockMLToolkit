@@ -11,6 +11,13 @@ use pyo3::types::{PyModule, PyModuleMethods};
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct BasicBlock(bb_core::BasicBlock);
 
+#[pymethods]
+impl BasicBlock {
+    pub fn symbolize(&self) -> SymbolizedBasicBlock {
+        SymbolizedBasicBlock(self.0.symbolize())
+    }
+}
+
 #[pyclass(eq, hash, frozen)]
 #[repr(transparent)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
