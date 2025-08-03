@@ -16,8 +16,8 @@ class BasicBlockDataset(Dataset):
         for sequence in tokenized_sequences:
             for i in range(len(sequence) - context_len):
                 input_seq = sequence[i:i + context_len]
-                target = sequence[i + context_len]
-                self.samples.append((input_seq, target))
+                target_seq = sequence[i + 1:i + context_len + 1]
+                self.samples.append((input_seq, target_seq))
 
     def __len__(self):
         return len(self.samples)
