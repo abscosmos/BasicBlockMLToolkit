@@ -1,20 +1,32 @@
 use pyo3::Bound;
-use std::fs;
+use std::{fmt, fs};
 use hashbrown::HashMap;
 use std::path::PathBuf;
 use pyo3::{pyclass, pymethods, pymodule, PyResult};
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyModule, PyModuleMethods};
 
-#[pyclass(eq, hash, frozen)]
+#[pyclass(eq, hash, frozen, str)]
 #[repr(transparent)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct BasicBlock(bb_core::BasicBlock);
+
+impl fmt::Display for BasicBlock {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 #[pyclass(eq, hash, frozen)]
 #[repr(transparent)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct SymbolizedBasicBlock(bb_core::SymbolizedBasicBlock);
+
+impl fmt::Display for SymbolizedBasicBlock {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 #[pyclass(eq, hash, frozen)]
 #[repr(transparent)]
