@@ -53,6 +53,8 @@ pub unsafe extern "C" fn basic_block(
         application,
     };
 
+    logger.trace.order.push(block_loc.clone());
+
     if logger.trace.blocks.contains_key(&block_loc) {
         return dr_emit_flags_t::DR_EMIT_DEFAULT;
     }
