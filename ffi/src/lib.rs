@@ -14,6 +14,11 @@ pub struct BasicBlock(bb_core::BasicBlock);
 #[pyclass(eq, hash, frozen)]
 #[repr(transparent)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub struct SymbolizedBasicBlock(bb_core::SymbolizedBasicBlock);
+
+#[pyclass(eq, hash, frozen)]
+#[repr(transparent)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct BasicBlockLocation(bb_core::BasicBlockLocation);
 
 #[pymethods]
@@ -87,6 +92,7 @@ impl TraceData {
 #[pymodule]
 fn bb_toolkit(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<BasicBlock>()?;
+    m.add_class::<SymbolizedBasicBlock>()?;
     m.add_class::<BasicBlockLocation>()?;
     m.add_class::<Application>()?;
     m.add_class::<TraceData>()?;
