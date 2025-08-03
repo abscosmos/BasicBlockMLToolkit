@@ -1,0 +1,142 @@
+# List directory contents
+ls /dev/null
+# Concatenate and print files
+cat /dev/null
+# Print text to standard output
+echo "test"
+# Change file timestamps
+touch /dev/null
+# Print working directory
+pwd
+# Strip directory and suffix from file name
+basename /usr/bin/ls
+# Strip the last component from file name
+dirname /usr/bin/ls
+# Display or set date and time
+date
+# Pause for a number of seconds
+sleep 0.1
+# Do nothing, successfully
+true
+# Do nothing, unsuccessfully
+false
+# Output first part of files
+head -n 0 /dev/null
+# Output last part of files
+tail -n 0 /dev/null
+# Remove sections from each line of files
+cut -c1-1 /dev/null
+# Sort lines of text files
+sort /dev/null
+# Report or omit repeated lines
+uniq /dev/null
+# Print newline, word, and byte counts
+wc /dev/null
+# Translate or delete characters
+echo "" | tr a-z A-Z
+# Evaluate expressions
+expr 1 + 1
+# Split files into pieces
+split -l 1 /dev/null split_
+# Display file or file system status
+stat /dev/null
+# Change file modes (show help to avoid changes)
+chmod --help
+# Change file ownership (show help to avoid changes)
+chown --help
+# Make links between files (show help)
+ln --help
+# Securely overwrite files (show help)
+shred --help
+# Report file system disk space usage
+df /
+# Estimate file space usage
+du -s /dev/null
+# Print user and group IDs
+id
+# Print current user name
+whoami
+# Show hostname
+hostname
+# Flush file system buffers
+sync
+# Display version information
+basename --version
+# Concatenate files and print on the standard output (same as cat)
+tac /dev/null
+# Change group ownership of files (show help)
+chgrp --help
+# Display or set ACLs (show help)
+getfacl --help
+# Set ACLs (show help)
+setfacl --help
+# Set file attributes (show help)
+chattr --help
+# List extended attributes (show help)
+lsattr --help
+# Display disk usage in human-readable form
+du -sh /dev/null
+# Count lines, words, characters in input
+wc /dev/null
+# Convert uppercase to lowercase or vice versa
+echo "AbC" | tr 'A-Za-z' 'a-zA-Z'
+# Format and justify text
+fmt /dev/null
+# Join lines of files
+join --help
+# Print environment or run a command in modified environment
+env
+# Expand tabs to spaces
+expand /dev/null
+# Compress files (show help)
+gzip --help
+# Decompress files (show help)
+gunzip --help
+# List contents of tarballs (show help)
+tar --help
+# Compress with bzip2 (show help)
+bzip2 --help
+# Decompress bzip2 (show help)
+bunzip2 --help
+# Compress with xz (show help)
+xz --help
+# Decompress xz (show help)
+unxz --help
+# Display file contents with non-printing characters shown
+cat -v /dev/null
+# Copy files (show help)
+cp --help
+# Move files (show help)
+mv --help
+# Remove files (show help)
+rm --help
+# Create directories (show help)
+mkdir --help
+# Remove empty directories (show help)
+rmdir --help
+# Display calendar
+cal
+# Print message on terminal
+wall "test"
+# Set terminal title (show help)
+setterm --help
+# Display block device info
+lsblk
+# Sync data to disk
+sync
+# Print the first lines of a file
+head -n 1 /dev/null
+# Print the last lines of a file
+tail -n 1 /dev/null
+# Generate sequences of numbers
+seq 1 1
+# Remove files forcibly and recursively (show help)
+rm -rf --help
+# Display progress of data through a pipe
+pv --help
+# Change the root directory (show help)
+chroot --help
+# Get or set extended attributes (show help)
+getfattr --help
+# Set extended attributes (show help)
+setfattr --hel
