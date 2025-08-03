@@ -1,5 +1,13 @@
+import os
+from pathlib import Path
+
 from bb_toolkit import TraceData
 from ml.tokenizer import BasicBlockTokenizer
+
+def load_all_traces(traces_dir: os.PathLike) -> list[TraceData]:
+    files = sorted(Path(traces_dir).glob("*.trace"), key=lambda f: f.stat().st_ctime)
+
+    return [TraceData.from_binary_file(file) for file in files]
 
 def main():
     trace = TraceData.from_binary_file("../traces/ls_trace-688eab66.trace")
