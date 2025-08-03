@@ -1,3 +1,4 @@
+use std::fmt;
 use serde::{Deserialize, Serialize};
 use crate::{BasicBlock, IndexRegScale, Instruction, Operand, RegisterId};
 
@@ -10,6 +11,16 @@ pub struct SymbolizedBasicBlock {
     pub instructions: Box<[SymbolizedInstruction]>,
 }
 
+impl fmt::Display for SymbolizedBasicBlock {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let joined = self.instructions.iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join(";\n");
+        write!(f, "{joined};")
+    }
+}
+
 // FIXME: maybe make field generic?
 //  currently this struct is exact same and non-symbolized
 #[derive(Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
@@ -17,6 +28,18 @@ pub struct SymbolizedInstruction {
     pub opcode: u16,
     pub src: Box<[SymbolizedOperand]>,
     pub dst: Box<[SymbolizedOperand]>,
+}
+
+impl fmt::Display for SymbolizedInstruction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let src_str = self.src.iter().map(ToString::to_string).collect::<Vec<_>>().join(", ");
+        let dst_str = self.dst.iter().map(ToString::to_string).collect::<Vec<_>>().join(", ");
+        if self.dst.is_empty() {
+            write!(f, "{}, {}", self.opcode, src_str)
+        } else {
+            write!(f, "{}, {} -> {}", self.opcode, src_str, dst_str)
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
@@ -28,6 +51,20 @@ pub enum SymbolizedOperand {
         index: Option<(SymRegisterId, IndexRegScale)>,
     },
     Address,
+}
+
+impl fmt::Display for SymbolizedOperand {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            SymbolizedOperand::Immediate => write!(f, "IMM"),
+            SymbolizedOperand::Register(id) => write!(f, "REG{id}"),
+            SymbolizedOperand::MemoryReference { base, index: Some((index, scale)) } => {
+                write!(f, "[REG{base} + REG{index}*{} + IMM]", *scale as u8)
+            }
+            SymbolizedOperand::MemoryReference { base, .. } => write!(f, "[REG{base} + IMM]"),
+            SymbolizedOperand::Address => write!(f, "ADDR"),
+        }
+    }
 }
 
 #[derive(Clone, Default, Debug, Eq, PartialEq, Hash)]

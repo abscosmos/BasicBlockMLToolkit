@@ -1,3 +1,4 @@
+use std::fmt;
 use serde::{Serialize, Deserialize};
 
 pub type OrdF32 = ordered_float::OrderedFloat<f32>;
@@ -9,6 +10,18 @@ pub struct Instruction {
     pub opcode: u16,
     pub src: Box<[Operand]>,
     pub dst: Box<[Operand]>,
+}
+
+impl fmt::Display for Instruction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let src_str = self.src.iter().map(ToString::to_string).collect::<Vec<_>>().join(", ");
+        let dst_str = self.dst.iter().map(ToString::to_string).collect::<Vec<_>>().join(", ");
+        if self.dst.is_empty() {
+            write!(f, "{}, {}", self.opcode, src_str)
+        } else {
+            write!(f, "{}, {} -> {}", self.opcode, src_str, dst_str)
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
@@ -25,6 +38,21 @@ pub enum Operand {
         displacement: i32,
     },
     Address(usize),
+}
+
+impl fmt::Display for Operand {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Operand::ImmediateInt(val) => write!(f, "{val}"),
+            Operand::ImmediateFloat(val) => write!(f, "{val}"),
+            Operand::Register(id) => write!(f, "REG{id}"),
+            Operand::MemoryReference { base, index: Some((index, scale)), displacement } => {
+                write!(f, "[REG{base} + REG{index}*{} + {displacement}]", *scale as u8)
+            }
+            Operand::MemoryReference { base, displacement, .. } => write!(f, "[REG{base} + {displacement}]"),
+            Operand::Address(addr) => write!(f, "0x{addr:x}"),
+        }
+    }
 }
 
 #[repr(u8)]
