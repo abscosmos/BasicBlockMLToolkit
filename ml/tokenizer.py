@@ -7,7 +7,7 @@ class BasicBlockTokenizer:
         self.token_to_block: Dict[int, SymbolizedBasicBlock] = {}
 
         special_tokens = {
-            "<PAD>": 0,
+            "<PAD>": self.get_pad_token(),
             "<UNK>": 1,
         }
 
@@ -45,6 +45,10 @@ class BasicBlockTokenizer:
             token_sequence.append(token_id)
 
         return token_sequence
+    
+    @staticmethod
+    def get_pad_token():
+        return 0
 
     def __len__(self) -> int:
         return len(self.block_to_token)
