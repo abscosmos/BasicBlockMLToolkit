@@ -8,6 +8,7 @@ pub struct TraceData {
     pub targeted: Application,
     pub filter: bool,
     pub blocks: HashMap<BlockLoc, BasicBlock>,
+    pub order: Vec<BlockLoc>,
 }
 
 impl TraceData {

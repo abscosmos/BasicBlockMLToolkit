@@ -108,6 +108,7 @@ pub extern "C" fn dr_client_main(
             targeted: target_application,
             blocks: HashMap::default(),
             filter,
+            order: Vec::default(),
         },
         save_path: file_name.as_ref().into(),
     };
