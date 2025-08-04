@@ -5,7 +5,10 @@ from torch.utils.data import DataLoader
 from ml.model import BasicBlockPredictor
 from ml.dataset import BasicBlockDataset
 
+from tqdm import tqdm
+
 from typing import Literal
+import sys
 
 def train_epoch(
     model: BasicBlockPredictor,
@@ -19,8 +22,8 @@ def train_epoch(
     model.train()
     train_loss = 0.0
 
-    total_train_batches = len(training_data)
-    progress_interval = max(1, total_train_batches // 100)
+    sys.stdout.flush()
+    progress_bar = tqdm(total=len(training_data), desc="Training", unit="batch")
 
     for batch_idx, (inputs, targets) in enumerate(training_data):
         inputs = inputs.to(device)
@@ -33,11 +36,8 @@ def train_epoch(
         optimizer.step()
         train_loss += loss.item() * inputs.size(0)
 
-        # print progress every 1%
-        if (batch_idx + 1) % progress_interval == 0:
-            progress = (batch_idx + 1) / total_train_batches * 100
-            current_loss = loss.item()
-            print(f"  progress: {progress:.0f}% - batch loss: {current_loss:.4f}")
+        progress_bar.set_postfix(loss=f"{loss.item():.4f}")
+        progress_bar.update(1)
 
     train_loss /= len(training_data.dataset)
 
