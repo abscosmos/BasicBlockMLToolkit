@@ -1,5 +1,7 @@
+use std::path::PathBuf;
 use hashbrown::HashMap;
-use pyo3::{pyclass, pymethods};
+use pyo3::{pyclass, pymethods, PyResult};
+use pyo3::exceptions::PyValueError;
 use crate::{SymbolizedBasicBlock, TraceData};
 
 #[pyclass]
@@ -50,6 +52,27 @@ impl BasicBlockTokenizer {
                 .cloned()
                 .map(SymbolizedBasicBlock)
         }
+    }
+
+    pub fn save_mapping_to_file(&self, path: PathBuf) -> PyResult<()> {
+        let bytes = postcard::to_allocvec(&self.token_to_block)
+            .map_err(|err| PyValueError::new_err(err.to_string()))?;
+
+        std::fs::write(path, bytes)
+            .map_err(|err| PyValueError::new_err(err.to_string()))?;
+
+        Ok(())
+    }
+
+    #[staticmethod]
+    pub fn load_from_mapping(path: PathBuf) -> PyResult<Self> {
+        let bytes = std::fs::read(&path)
+            .map_err(|err| PyValueError::new_err(err.to_string()))?;
+
+        let token_to_block: Vec<bb_core::SymbolizedBasicBlock> = postcard::from_bytes(&bytes)
+            .map_err(|err| PyValueError::new_err(err.to_string()))?;
+
+        Ok(Self::from_internal_vec(token_to_block))
     }
 
     pub fn process_trace(&mut self, trace: &TraceData) -> Vec<usize> {
