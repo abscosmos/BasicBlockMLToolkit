@@ -1,11 +1,10 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
-from typing import List, Tuple
 import numpy as np
 from sklearn.model_selection import train_test_split
 
 class BasicBlockDataset(Dataset):
-    def __init__(self, tokenized_sequences: List[List[int]], context_len: int):
+    def __init__(self, tokenized_sequences: list[list[int]], context_len: int):
         self.context_len = context_len
         self.samples = []
 
@@ -24,14 +23,14 @@ class BasicBlockDataset(Dataset):
         return torch.tensor(input_seq, dtype=torch.long), torch.tensor(target, dtype=torch.long)
 
 def create_training_data(
-    tokenized_sequences: List[List[int]],
+    tokenized_sequences: list[list[int]],
     sequence_length: int,
 
     validation_size: float = 0.15,
     test_size: float = 0.15,
 
     batch_size: int = 32,
-) -> Tuple[
+) -> tuple[
     DataLoader[BasicBlockDataset],
     DataLoader[BasicBlockDataset],
     DataLoader[BasicBlockDataset]
@@ -98,7 +97,7 @@ def create_training_data(
 
     return train_loader, val_loader, test_loader
 
-def analyze_sequence_stats(tokenized_sequences: List[List[int]]) -> dict:
+def analyze_sequence_stats(tokenized_sequences: list[list[int]]) -> dict:
     lengths = [len(seq) for seq in tokenized_sequences]
 
     stats = {
