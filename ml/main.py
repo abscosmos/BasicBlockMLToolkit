@@ -18,7 +18,8 @@ def load_all_traces(traces_dir: os.PathLike) -> list[TraceData]:
     return [TraceData.from_binary_file(file) for file in files]
 
 def main():
-    model_save_path = "./best_model.pt"
+    model_save_path = "../run/best_model.pt"
+    tokenizer_save_path = "../run/tokenizer.bin"
 
     # 1. load traces
     trace_path = "../bulk_collect/traces"
@@ -27,8 +28,16 @@ def main():
     print(f"Loaded {len(all_traces)} from {trace_path}.")
 
     # 2. tokenize
-    tokenizer = BasicBlockTokenizer()
+    if os.path.exists(tokenizer_save_path):
+        tokenizer = BasicBlockTokenizer.load_from_mapping(tokenizer_save_path)
+    else:
+        tokenizer = BasicBlockTokenizer()
+
+    prev_len = len(tokenizer)
     sequences: list[list[int]] = [tokenizer.process_trace(trace) for trace in all_traces]
+
+    if len(tokenizer) > prev_len:
+        tokenizer.save_mapping_to_file(tokenizer_save_path)
 
     # 3. stats
     print(analyze_sequence_stats(sequences))
@@ -50,6 +59,11 @@ def main():
     device: Literal["cpu", "cuda"] = "cuda" if torch.cuda.is_available() else "cpu"
 
     model = create_model(vocab_size, context_length=sequence_length).to(device)
+
+    if os.path.exists(model_save_path):
+        model.load_state_dict(torch.load(model_save_path, map_location=device))
+        print(f"loaded model from {model_save_path}")
+
     optimizer = AdamW(model.parameters(), lr=1e-4)
     best_val_loss = float("inf")
 
