@@ -4,9 +4,6 @@ from typing import List, Tuple
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-from bb_toolkit import TraceData
-from ml.tokenizer import BasicBlockTokenizer
-
 class BasicBlockDataset(Dataset):
     def __init__(self, tokenized_sequences: List[List[int]], context_len: int):
         self.context_len = context_len
