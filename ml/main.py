@@ -61,14 +61,14 @@ def main():
     model = create_model(vocab_size, context_length=sequence_length).to(device)
 
     if os.path.exists(model_save_path):
-        model.load_state_dict(torch.load(model_save_path, map_location=device))
+        model.load_state_dict(torch.load(model_save_path, map_location=model.device))
         print(f"loaded model from {model_save_path}")
 
     optimizer = AdamW(model.parameters(), lr=1e-4)
     best_val_loss = float("inf")
 
     for epoch in range(num_epochs):
-        train_loss, val_loss = train_epoch(model, optimizer, device, train_data, val_data)
+        train_loss, val_loss = train_epoch(model, optimizer, train_data, val_data)
 
         print(f"epoch {epoch+1}: train loss {train_loss:.4f}, val loss {val_loss:.4f}")
 

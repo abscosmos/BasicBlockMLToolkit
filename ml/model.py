@@ -75,6 +75,10 @@ class BasicBlockPredictor(nn.Module):
 
             return [(idx.item(), prob.item()) for idx, prob in zip(top_indices, top_probs)]
 
+    @property
+    def device(self) -> torch.device:
+        return self.transformer.device
+
 def create_model(vocab_size: int, context_length: int = 64) -> BasicBlockPredictor:
     if vocab_size < 1000:
         embedding_dim = 128
