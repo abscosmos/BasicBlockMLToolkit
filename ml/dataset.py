@@ -114,30 +114,3 @@ def analyze_sequence_stats(tokenized_sequences: list[list[int]]) -> dict:
     }
 
     return stats
-
-def prepare_data_loaders(
-    trace_file_path: str,
-    sequence_length: int = 64,
-    batch_size: int = 32
-) -> Tuple[DataLoader, DataLoader, 'BasicBlockTokenizer']:
-    print("Loading trace data...")
-    trace_data = TraceData.from_binary_file(trace_file_path)
-
-    tokenizer = BasicBlockTokenizer()
-    tokenized_sequence = tokenizer.process_trace(trace_data)
-
-    print(f"Vocabulary size: {len(tokenizer)}")
-    print(f"Sequence length: {len(tokenized_sequence):,} tokens")
-
-    stats = analyze_sequence_stats([tokenized_sequence])
-    print(stats)
-
-    print("Creating DataLoaders...")
-    train_loader, val_loader = create_training_data(
-        [tokenized_sequence],
-        sequence_length=sequence_length,
-        batch_size=batch_size,
-        pad_token_id=BasicBlockTokenizer.get_pad_token()
-    )
-
-    return train_loader, val_loader, tokenizer
