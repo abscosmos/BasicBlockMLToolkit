@@ -5,4 +5,7 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.13"
 
-dependencies = []
+dependencies = ["numpy", "torch", "scikit-learn"]
+
+[tool.setuptools]
+packages = ["ml"]
