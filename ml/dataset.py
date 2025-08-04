@@ -25,11 +25,18 @@ class BasicBlockDataset(Dataset):
 
 def create_training_data(
     tokenized_sequences: List[List[int]],
-    sequence_length: int = 64,
-    test_size: float = 0.2,
+    sequence_length: int,
+
+    validation_size: float = 0.15,
+    test_size: float = 0.15,
+
     batch_size: int = 32,
-    pad_token_id: int = 0
-) -> Tuple[DataLoader, DataLoader]:
+) -> Tuple[
+    DataLoader[BasicBlockDataset],
+    DataLoader[BasicBlockDataset],
+    DataLoader[BasicBlockDataset]
+]:
+    assert validation_size + test_size < 1, "no data to train with"
     
     # filter sequences to ensure they are long enough
     min_length = sequence_length + 1
@@ -41,20 +48,28 @@ def create_training_data(
         raise ValueError(f"No sequences long enough (minimum {min_length} tokens)")
 
     # split sequences into train/validation
-    train_sequences, val_sequences = train_test_split(
+    train_sequences, rest_sequences = train_test_split(
         valid_sequences,
-        test_size=test_size,
-        random_state=42
+        test_size=validation_size + test_size,
+        random_state=42,
+        shuffle=True
+    )
+
+    val_sequences, test_sequences = train_test_split(
+        rest_sequences,
+        test_size=test_size / (validation_size + test_size),
+        random_state=42,
+        shuffle=True
     )
     
-    print(f"{len(train_sequences)} training, {len(val_sequences)} validation")
+    print(f"{len(train_sequences)=}, {len(val_sequences)=}, {len(test_sequences)=}")
 
     # create datasets
     train_dataset = BasicBlockDataset(train_sequences, sequence_length)
     val_dataset = BasicBlockDataset(val_sequences, sequence_length)
+    test_dataset = BasicBlockDataset(test_sequences, sequence_length)
 
-    print(f"Train samples: {len(train_dataset)}")
-    print(f"Validation samples: {len(val_dataset)}")
+    print(f"{len(train_dataset)=}, {len(val_dataset)=}, {len(test_dataset)=}")
 
     # Create DataLoaders
     train_loader = DataLoader(
@@ -73,7 +88,15 @@ def create_training_data(
         pin_memory=torch.cuda.is_available()
     )
 
-    return train_loader, val_loader
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=torch.cuda.is_available()
+    )
+
+    return train_loader, val_loader, test_loader
 
 def analyze_sequence_stats(tokenized_sequences: List[List[int]]) -> dict:
     lengths = [len(seq) for seq in tokenized_sequences]
