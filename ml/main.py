@@ -8,7 +8,7 @@ from bb_toolkit import TraceData, BasicBlockTokenizer
 from torch.optim import AdamW
 
 from ml.dataset import analyze_sequence_stats, create_training_data
-from ml.model import create_model
+from ml.model import create_model, BasicBlockPredictor
 from ml.train import train_epoch
 
 
@@ -16,6 +16,17 @@ def load_all_traces(traces_dir: os.PathLike) -> list[TraceData]:
     files = sorted(Path(traces_dir).glob("*.trace"), key=lambda f: f.stat().st_ctime)
 
     return [TraceData.from_binary_file(file) for file in files]
+
+def load_model_for_inference(model_path: str, tokenizer_path: str, context_length: int, device: str) -> tuple[BasicBlockPredictor, BasicBlockTokenizer]:
+    tokenizer = BasicBlockTokenizer.load_from_mapping(tokenizer_path)
+
+    vocab_size = len(tokenizer)
+    model = create_model(vocab_size, context_length=context_length).to(device)
+
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device)
+
+    return model, tokenizer
 
 def main():
     model_save_path = "../run/best_model.pt"
