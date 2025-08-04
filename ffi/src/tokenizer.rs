@@ -69,8 +69,25 @@ impl BasicBlockTokenizer {
     pub fn __len__(&self) -> usize {
         self.next_token()
     }
+}
+
+impl BasicBlockTokenizer {
+    const SPECIAL_TOKEN_COUNT: usize = 2;
+
+    fn from_internal_vec(token_to_block: Vec<bb_core::SymbolizedBasicBlock>) -> Self {
+        let mut block_to_token = HashMap::with_capacity(token_to_block.len());
+
+        for (i, block) in token_to_block.iter().enumerate() {
+            block_to_token.insert(block.clone(), i + Self::SPECIAL_TOKEN_COUNT);
+        }
+
+        Self {
+            block_to_token,
+            token_to_block,
+        }
+    }
 
     fn next_token(&self) -> usize {
-        self.token_to_block.len() + 2
+        self.token_to_block.len() + Self::SPECIAL_TOKEN_COUNT
     }
 }
