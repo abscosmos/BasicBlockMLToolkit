@@ -80,9 +80,9 @@ def train_model(
             print("saved new best model")
 
 def main():
-    model_save_path = "../run/best_model.pt"
-    tokenizer_save_path = "../run/tokenizer.bin"
-    trace_path = "../bulk_collect/traces"
+    model_save_path = "./run/best_model.pt"
+    tokenizer_save_path = "./run/tokenizer.bin"
+    trace_path = "./bulk_collect/traces"
     sequence_length = 16
 
     # 1. tokens
