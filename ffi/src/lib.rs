@@ -1,3 +1,5 @@
+mod tokenizer;
+
 use pyo3::Bound;
 use std::{fmt, fs};
 use hashbrown::HashMap;
@@ -11,13 +13,20 @@ use pyo3::types::{PyModule, PyModuleMethods};
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct BasicBlock(bb_core::BasicBlock);
 
+#[pymethods]
+impl BasicBlock {
+    pub fn symbolize(&self) -> SymbolizedBasicBlock {
+        SymbolizedBasicBlock(self.0.symbolize())
+    }
+}
+
 impl fmt::Display for BasicBlock {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-#[pyclass(eq, hash, frozen)]
+#[pyclass(eq, hash, frozen, str)]
 #[repr(transparent)]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct SymbolizedBasicBlock(bb_core::SymbolizedBasicBlock);
@@ -108,6 +117,8 @@ fn bb_toolkit(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<BasicBlockLocation>()?;
     m.add_class::<Application>()?;
     m.add_class::<TraceData>()?;
+
+    m.add_class::<tokenizer::BasicBlockTokenizer>()?;
 
     Ok(())
 }

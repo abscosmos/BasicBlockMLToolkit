@@ -21,3 +21,4 @@ rust-project.json
 vendor/
 *.log
 .venv/
+*.trace
