@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
@@ -30,6 +32,8 @@ def create_training_data(
     test_size: float = 0.15,
 
     batch_size: int = 32,
+
+    seed: Optional[int] = None,
 ) -> tuple[
     DataLoader[BasicBlockDataset],
     DataLoader[BasicBlockDataset],
@@ -50,14 +54,14 @@ def create_training_data(
     train_sequences, rest_sequences = train_test_split(
         valid_sequences,
         test_size=validation_size + test_size,
-        random_state=42,
+        random_state=seed,
         shuffle=True
     )
 
     val_sequences, test_sequences = train_test_split(
         rest_sequences,
         test_size=test_size / (validation_size + test_size),
-        random_state=42,
+        random_state=seed,
         shuffle=True
     )
     
