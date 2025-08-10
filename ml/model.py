@@ -1,111 +1,69 @@
 import torch
 import torch.nn as nn
-from typing import Optional
-from transformers import GPT2Config, GPT2LMHeadModel
-from transformers.modeling_outputs import CausalLMOutputWithCrossAttentions
+
+from bb_toolkit import BasicBlockTokenizer
+from embedding import ShardedEmbedding
 
 class BasicBlockPredictor(nn.Module):
     def __init__(
-        self,
-        vocab_size: int,
-        context_length: int = 64,
-        embedding_dim: int = 256,
-        num_layers: int = 6,
-        num_heads: int = 8,
-        dropout: float = 0.1
+            self,
+            embedding: ShardedEmbedding,
+            tokenizer: BasicBlockTokenizer,
+            # number of attention heads
+            n_head: int = 4,
+            # number of transformer encoder layers
+            num_layers: int = 2,
+            *args,
+            **kwargs
     ):
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
-        self.vocab_size = vocab_size
-        self.context_length = context_length
+        self.embedding: ShardedEmbedding = embedding
+        self.tokenizer: BasicBlockTokenizer = tokenizer
 
-        config = GPT2Config(
-            vocab_size=vocab_size,
-            n_positions=context_length,
-            n_embd=embedding_dim,
-            n_layer=num_layers,
-            n_head=num_heads,
-            resid_pdrop=dropout,
-            embd_pdrop=dropout,
-            attn_pdrop=dropout,
+        self.transformer = nn.TransformerEncoder(
+            nn.TransformerEncoderLayer(
+                d_model=self.embedding_dim,
+                nhead=n_head
+            ),
+            num_layers=num_layers
         )
 
-        self.transformer = GPT2LMHeadModel(config)
+        self.output_linear = nn.Linear(self.embedding_dim, len(tokenizer))
 
-    def forward(self, input_ids: torch.Tensor, labels: Optional[torch.Tensor] = None) -> CausalLMOutputWithCrossAttentions:
-        """
-        Forward pass through the model.
+    def forward(self, token_ids: torch.LongTensor) -> torch.Tensor:
+        if self.num_active_tokens == 0:
+            return torch.zeros(self.embedding_dim)
 
-        Args:
-            input_ids: Token sequences [batch_size, sequence_length]
-            labels: Target tokens for training [batch_size, sequence_length]
+        embeddings: torch.Tensor = self.embedding(token_ids)
+        embeddings = embeddings.transpose(0, 1)
 
-        Returns:
-            Model outputs with loss (if labels provided) and logits
-        """
-        return self.transformer(input_ids=input_ids, labels=labels)
+        transformer_out: torch.Tensor = self.transformer(embeddings)
+        transformer_out = transformer_out.transpose(0, 1)
+
+        logits = self.output_linear(transformer_out)
+
+        return logits
 
     def predict_next_block(self, input_sequence: torch.Tensor, top_k: int = 5) -> list[tuple[int, float]]:
-        """
-        Predict the next block given an input sequence.
+        raise NotImplementedError()
 
-        Args:
-            input_sequence: Token sequence [sequence_length]
-            top_k: Number of top predictions to return
 
-        Returns:
-            List of (token_id, probability) tuples
-        """
-        self.eval()
-        # speeds up inference, no gradient tracking needed since not training
-        with torch.no_grad():
-            # model expects inputs in batches, [1, sequence_length]
-            input_ids = input_sequence.unsqueeze(0)
+    @property
+    def embedding_dim(self) -> int:
+        return self.embedding.embedding_dim
 
-            # makes the predictions
-            outputs = self.transformer(input_ids)
-            # scores for the last token in the sequence
-            logits = outputs.logits[0, -1, :]
-
-            # normalizes probabilities, since logits can be any real number
-            probs = torch.softmax(logits, dim=-1)
-
-            # finds the top probabilities
-            top_probs, top_indices = torch.topk(probs, top_k)
-
-            return [(idx.item(), prob.item()) for idx, prob in zip(top_indices, top_probs)]
+    @property
+    def vocab_size(self) -> int:
+        return len(self.tokenizer)
 
     @property
     def device(self) -> torch.device:
-        return self.transformer.device
+        return next(self.transformer.parameters()).device
+
+    def to(self, device: torch.device) -> None:
+        self.transformer.to(device)
+        self.embedding.to(device)
 
 def create_model(vocab_size: int, context_length: int = 64) -> BasicBlockPredictor:
-    if vocab_size < 1000:
-        embedding_dim = 128
-        num_layers = 4
-        num_heads = 4
-    elif vocab_size < 5000:
-        embedding_dim = 256
-        num_layers = 6
-        num_heads = 8
-    else:
-        embedding_dim = 512
-        num_layers = 8
-        num_heads = 8
-
-    model = BasicBlockPredictor(
-        vocab_size=vocab_size,
-        context_length=context_length,
-        embedding_dim=embedding_dim,
-        num_layers=num_layers,
-        num_heads=num_heads,
-        dropout=0.1
-    )
-
-    print(f"Created model with {sum(p.numel() for p in model.parameters()):,} parameters")
-    print(f"Vocabulary size: {vocab_size}")
-    print(f"Context length: {context_length}")
-    print(f"Embedding dimension: {embedding_dim}")
-    print(f"Number of layers: {num_layers}")
-
-    return model
+    raise NotImplementedError()
