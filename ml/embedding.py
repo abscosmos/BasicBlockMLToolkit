@@ -64,6 +64,24 @@ class ShardedEmbedding(nn.Module):
         # mean across each of the tensors in the 2d tensor
         return torch.mean(stacked, dim=0)
 
+    def initialize_embeddings(self, max_token_id: int) -> None:
+        if self.num_active_tokens > max_token_id:
+            return
+
+        old_capacity = self.num_active_tokens
+        new_capacity = max_token_id + 1
+
+        self._reserve(new_capacity)
+        self.num_active_tokens = new_capacity
+
+        avg = self.average_embedding()
+
+        with torch.no_grad():
+            for token_id in range(old_capacity, self.num_active_tokens):
+                shard_idx, offset = self._get_shard_idx_and_offset(token_id)
+                self.shards[shard_idx].weight.data[offset].copy_(avg)
+
+
     def forward(self, token_ids: torch.LongTensor) -> torch.Tensor:
         """
         Computes token embeddings for a batch of token IDs
@@ -71,9 +89,7 @@ class ShardedEmbedding(nn.Module):
         :return: embeddings of tokens in shape (batch_size, seq_len, embedding_dim)
         """
 
-        max_token_id: int = token_ids.max().item()
-        if max_token_id >= self.num_active_tokens:
-            self._reserve(max_token_id)
+        self.initialize_embeddings(token_ids.max().item())
 
         batch_size, seq_len = token_ids.shape
         out_embeddings = torch.zeros(batch_size, seq_len, self.embedding_dim, device=token_ids.device)
