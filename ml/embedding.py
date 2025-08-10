@@ -1,11 +1,14 @@
 import torch
 import torch.nn as nn
 
+from typing import Optional
+
 class ShardedEmbedding(nn.Module):
     def __init__(
         self,
         embedding_dim: int,
         shard_size: int = 2048,
+        device: Optional[torch.device] = None,
         *args,
         **kwargs
     ):
@@ -14,6 +17,7 @@ class ShardedEmbedding(nn.Module):
         self.embedding_dim: int = embedding_dim
         self.shard_size: int = shard_size
         self.num_active_tokens: int = 0
+        self._device = device
 
         self.shards = nn.ModuleList()
 
@@ -25,6 +29,10 @@ class ShardedEmbedding(nn.Module):
 
     def _create_shard(self) -> None:
         new_shard = nn.Embedding(self.shard_size, self.embedding_dim)
+
+        if self.device is not None:
+            new_shard.to(self.device)
+
         # random init
         nn.init.normal(new_shard.weight, mean=0, std=0.1)
         self.shards.append(new_shard)
@@ -88,3 +96,14 @@ class ShardedEmbedding(nn.Module):
                 out_embeddings[mask] = shard(offsets)
 
         return out_embeddings
+
+    @property
+    def device(self) -> torch.device:
+        return self._device
+
+    def to(self, device: torch.device) -> None:
+        self._device = device
+
+        super().to(device)
+        for shard in self.shards:
+            shard.to(device)
