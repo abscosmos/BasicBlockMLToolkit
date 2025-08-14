@@ -1,5 +1,7 @@
+use serde::{Deserialize, Serialize};
 use crate::{BasicBlock, BasicBlockLocation as BlockLoc, SymbolizedBasicBlock};
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct BasicBlockSequence(pub Box<[(BlockLoc, BasicBlock)]>);
 
 impl BasicBlockSequence {
