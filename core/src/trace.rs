@@ -60,7 +60,7 @@ impl TraceData {
             blocks.push((loc.clone(), block.clone()));
         }
 
-        BasicBlockSequence { blocks: blocks.into() }
+        BasicBlockSequence(blocks.into())
     }
 }
 
