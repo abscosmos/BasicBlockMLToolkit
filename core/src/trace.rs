@@ -1,7 +1,7 @@
 use std::hash::Hash;
 use hashbrown::{HashMap, HashSet};
 use serde::{Deserialize, Serialize};
-use crate::{Application, BasicBlock, BasicBlockLocation as BlockLoc};
+use crate::{Application, BasicBlock, BasicBlockLocation as BlockLoc, BasicBlockSequence};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TraceData {
@@ -49,6 +49,18 @@ impl TraceData {
             targeted,
             unique_apps,
         }
+    }
+
+    pub fn sequence(&self) -> BasicBlockSequence {
+        let mut blocks = Vec::with_capacity(self.order.len());
+
+        for loc in &self.order {
+            let block = self.blocks.get(loc).expect("corresponding block should exist");
+            
+            blocks.push((loc.clone(), block.clone()));
+        }
+
+        BasicBlockSequence(blocks.into())
     }
 }
 

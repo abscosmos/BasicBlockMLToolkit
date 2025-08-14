@@ -108,6 +108,40 @@ impl TraceData {
             order,
         })
     }
+
+    pub fn sequence(&self) -> BasicBlockSequence {
+        let mut blocks = Vec::with_capacity(self.order.len());
+
+        for loc in &self.order {
+            let block = self.blocks.get(loc).expect("corresponding block should exist");
+
+            blocks.push((loc.clone(), block.clone()));
+        }
+
+        BasicBlockSequence(blocks)
+    }
+}
+
+// TODO: remove code duplication for related methods?
+#[pyclass(frozen, eq, hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub struct BasicBlockSequence(pub Vec<(BasicBlockLocation, BasicBlock)>);
+
+#[pymethods]
+impl BasicBlockSequence {
+    pub fn blocks(&self) -> Vec<BasicBlock> {
+        self.0.iter()
+            .map(|(_, block)| block)
+            .cloned()
+            .collect()
+    }
+
+    pub fn symbolized_blocks(&self) -> Vec<SymbolizedBasicBlock> {
+        self.blocks()
+            .iter()
+            .map(BasicBlock::symbolize)
+            .collect()
+    }
 }
 
 #[pymodule]
