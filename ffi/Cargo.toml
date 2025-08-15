@@ -11,4 +11,6 @@ crate-type = ["cdylib"]
 pyo3 = { version = "0.25.1", features = ["hashbrown", "extension-module"] }
 postcard = { version = "1.1.2", features = ["alloc"] }
 hashbrown = { version = "0.15.4", features = ["serde"] }
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = "1.0.142"
 bb_core = { path = "../core", package = "core" }

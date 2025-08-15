@@ -7,10 +7,11 @@ use std::path::PathBuf;
 use pyo3::{pyclass, pymethods, pymodule, PyResult};
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyModule, PyModuleMethods};
+use serde::{Deserialize, Serialize};
 
 #[pyclass(eq, hash, frozen, str)]
 #[repr(transparent)]
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct BasicBlock(bb_core::BasicBlock);
 
 #[pymethods]
@@ -39,7 +40,7 @@ impl fmt::Display for SymbolizedBasicBlock {
 
 #[pyclass(eq, hash, frozen)]
 #[repr(transparent)]
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct BasicBlockLocation(bb_core::BasicBlockLocation);
 
 #[pymethods]
@@ -124,7 +125,7 @@ impl TraceData {
 
 // TODO: remove code duplication for related methods?
 #[pyclass(frozen, eq, hash)]
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct BasicBlockSequence(pub Vec<(BasicBlockLocation, BasicBlock)>);
 
 #[pymethods]
@@ -141,6 +142,14 @@ impl BasicBlockSequence {
             .iter()
             .map(BasicBlock::symbolize)
             .collect()
+    }
+
+    pub fn to_json(&self, pretty: bool) -> String {
+        if pretty {
+            serde_json::to_string_pretty(self).expect("should be valid to serialize")
+        } else {
+            serde_json::to_string(self).expect("should be valid to serialize")
+        }
     }
 }
 
