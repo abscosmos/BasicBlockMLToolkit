@@ -1,8 +1,34 @@
 import torch
 import torch.nn as nn
+import math
 from typing import Optional
-from transformers import GPT2Config, GPT2LMHeadModel
-from transformers.modeling_outputs import CausalLMOutputWithCrossAttentions
+from ml.embedding import DynamicEmbedding
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, embedding_dim: int, max_len: int = 5000):
+        super().__init__()
+        
+        pe = torch.zeros(max_len, embedding_dim)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, embedding_dim, 2).float() * (-math.log(10000.0) / embedding_dim))
+        
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        
+        self.register_buffer('pe', pe)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Add positional encoding to embeddings.
+        
+        Args:
+            x: Embeddings of shape [batch_size, seq_len, embedding_dim]
+            
+        Returns:
+            Embeddings with positional encoding added
+        """
+        seq_len = x.size(1)
+        return x + self.pe[:seq_len, :].unsqueeze(0)
 
 class BasicBlockPredictor(nn.Module):
     def __init__(
