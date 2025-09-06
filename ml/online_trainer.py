@@ -62,6 +62,7 @@ class OnlineLearner:
         epochs: int = 10,
         batch_size: int = 8,
         validation_split: float = 0.15,
+        test_split: float = 0.0,
         save_path: Optional[str] = None
     ) -> Dict[str, Any]:
         """
@@ -72,6 +73,7 @@ class OnlineLearner:
             epochs: Number of training epochs
             batch_size: Batch size for training
             validation_split: Fraction of data to use for validation
+            test_split: Fraction of data to use for testing (0.0 = no test split)
             save_path: Optional path to save best model
             
         Returns:
@@ -79,11 +81,11 @@ class OnlineLearner:
         """
         print(f"Starting initial training on {len(trace_sequences)} sequences...")
         
-        train_loader, val_loader, _ = create_training_data(
+        train_loader, val_loader, test_loader = create_training_data(
             tokenized_sequences=trace_sequences,
             sequence_length=self.model.context_length,
             validation_size=validation_split,
-            test_size=0.0,
+            test_size=test_split,
             batch_size=batch_size,
             seed=42
         )
@@ -117,14 +119,29 @@ class OnlineLearner:
         
         self._establish_baseline_confidence(val_loader)
         
+        # evaluate on test set if provided
+        test_loss = None
+        test_metrics = None
+        if test_split > 0 and test_loader:
+            test_loss = self._validate_epoch(test_loader)
+            test_metrics = self._evaluate_test_performance(test_loader)
+            print(f"Test evaluation: test_loss={test_loss:.4f}, test_accuracy={test_metrics['accuracy']:.4f}")
+        
         print("Initial training completed!")
-        return {
+
+        result = {
             'final_train_loss': train_loss,
             'final_val_loss': val_loss,
             'best_val_loss': best_val_loss,
             'final_vocab_size': self.model.get_vocab_size(),
             'training_history': self.training_history['initial_losses']
         }
+
+        if test_loss is not None:
+            result['test_loss'] = test_loss
+            result['test_metrics'] = test_metrics
+        
+        return result
     
     def process_new_traces(
         self,
@@ -296,6 +313,50 @@ class OnlineLearner:
                     total_predictions += 1
         
         return total_confidence / max(total_predictions, 1)
+    
+    def _evaluate_test_performance(self, test_loader: DataLoader) -> Dict[str, float]:
+        """Evaluate comprehensive performance metrics on test set."""
+        self.model.eval()
+        
+        total_predictions = 0
+        correct_predictions = 0
+        top5_correct = 0
+        total_confidence = 0.0
+        
+        with torch.no_grad():
+            for batch_inputs, batch_targets in test_loader:
+                batch_inputs = batch_inputs.to(self.model.device)
+                batch_targets = batch_targets.to(self.model.device)
+                
+                batch_size, seq_len = batch_inputs.shape
+                
+                for i in range(min(batch_size, 5)):
+                    context = batch_inputs[i, :-1]
+                    target = batch_targets[i, -1].item()
+                    
+                    predictions = self.model.predict_next_block(context, top_k=5)
+                    if predictions:
+                        # top-1
+                        if predictions[0][0] == target:
+                            correct_predictions += 1
+                        
+                        # top-5
+                        predicted_tokens = [pred[0] for pred in predictions]
+                        if target in predicted_tokens:
+                            top5_correct += 1
+                        
+                        total_confidence += predictions[0][1]
+                        total_predictions += 1
+        
+        if total_predictions == 0:
+            return {'accuracy': 0.0, 'top5_accuracy': 0.0, 'avg_confidence': 0.0}
+        
+        return {
+            'accuracy': correct_predictions / total_predictions,
+            'top5_accuracy': top5_correct / total_predictions,
+            'avg_confidence': total_confidence / total_predictions,
+            'total_predictions': total_predictions
+        }
     
     def _establish_baseline_confidence(self, val_loader: DataLoader):
         """Establish baseline confidence after initial training."""
