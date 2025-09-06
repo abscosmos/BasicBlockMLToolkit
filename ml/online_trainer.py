@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
-from typing import List, Optional, Dict, Any
+from typing import Optional, Any
 import numpy as np
 from collections import deque
 import time
@@ -64,7 +64,7 @@ class OnlineLearner:
         validation_split: float = 0.15,
         test_split: float = 0.0,
         save_path: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Perform initial training on historical trace data to establish base patterns.
         
@@ -145,9 +145,9 @@ class OnlineLearner:
     
     def process_new_traces(
         self,
-        new_sequences: List[List[int]],
+        new_sequences: list[list[int]],
         force_update: bool = False
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Process new trace sequences and decide whether to perform incremental updates.
         
@@ -195,10 +195,10 @@ class OnlineLearner:
     
     def incremental_update(
         self,
-        new_sequences: List[List[int]],
+        new_sequences: list[list[int]],
         steps: int = 3,
         mix_ratio: float = 0.3
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Perform lightweight incremental updates on new data.
         
@@ -278,7 +278,7 @@ class OnlineLearner:
         confidence_drop: float = self.baseline_confidence - recent_avg
         return confidence_drop > self.confidence_threshold
     
-    def _evaluate_confidence(self, sequences: List[List[int]]) -> float:
+    def _evaluate_confidence(self, sequences: list[list[int]]) -> float:
         """Evaluate model confidence on a set of sequences."""
         if not sequences:
             return 0.0
@@ -314,7 +314,7 @@ class OnlineLearner:
         
         return total_confidence / max(total_predictions, 1)
     
-    def _evaluate_test_performance(self, test_loader: DataLoader) -> Dict[str, float]:
+    def _evaluate_test_performance(self, test_loader: DataLoader) -> dict[str, float]:
         """Evaluate comprehensive performance metrics on test set."""
         self.model.eval()
         
@@ -449,7 +449,7 @@ class OnlineLearner:
         }
         torch.save(checkpoint, path)
     
-    def load_checkpoint(self, path: str) -> Dict[str, Any]:
+    def load_checkpoint(self, path: str) -> dict[str, Any]:
         """Load model checkpoint and restore training state."""
         checkpoint = torch.load(path, map_location=self.model.device)
         
@@ -466,7 +466,7 @@ class OnlineLearner:
             'model_vocab_size': self.model.get_vocab_size()
         }
     
-    def get_training_stats(self) -> Dict[str, Any]:
+    def get_training_stats(self) -> dict[str, Any]:
         """Get comprehensive training statistics."""
         return {
             'trace_count': self.trace_count,
