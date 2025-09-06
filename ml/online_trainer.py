@@ -1,5 +1,6 @@
+import os
+
 import torch
-import torch.nn as nn
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from typing import Optional, Any
@@ -63,7 +64,7 @@ class OnlineLearner:
         batch_size: int = 8,
         validation_split: float = 0.15,
         test_split: float = 0.0,
-        save_path: Optional[str] = None
+        save_path: Optional[os.PathLike] = None
     ) -> dict[str, Any]:
         """
         Perform initial training on historical trace data to establish base patterns.
