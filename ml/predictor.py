@@ -31,6 +31,7 @@ class BasicBlockPredictor:
         # load or create tokenizer
         if tokenizer_path and os.path.exists(tokenizer_path):
             self.tokenizer = BasicBlockTokenizer.load_from_mapping(tokenizer_path)
+            print(f"Loaded tokenizer with vocab size {len(self.tokenizer)}")
         else:
             self.tokenizer = BasicBlockTokenizer()
         
@@ -39,6 +40,7 @@ class BasicBlockPredictor:
             self.model, self.learner = self._load_model_and_learner(
                 model_path, update_threshold, update_frequency
             )
+            print(f"Loaded model: {self.get_model_stats()}")
         else:
             # create fresh model if no saved model exists
             self.model = create_model(
