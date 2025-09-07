@@ -7,7 +7,11 @@ from typing import Optional, Any
 import numpy as np
 from collections import deque
 import time
-from tqdm import tqdm
+
+try:
+    from tqdm.notebook import tqdm
+except ImportError:
+    from tqdm import tqdm
 
 from ml.model import OnlineBasicBlockPredictor
 from ml.dataset import BasicBlockDataset, create_training_data
@@ -94,12 +98,12 @@ class OnlineLearner:
         
         self.model.train()
         best_val_loss = float('inf')
-        
-        for epoch in range(epochs):
-            # Training phase
+
+        epoch_pbar = tqdm(range(epochs), desc="Initial Training", mininterval=0.5)
+
+        for epoch in epoch_pbar:
             train_loss = self._train_epoch(train_loader, self.initial_optimizer)
-            
-            # Validation phase
+
             val_loss = self._validate_epoch(val_loader)
             
             self.training_history['initial_losses'].append({
@@ -109,15 +113,18 @@ class OnlineLearner:
                 'vocab_size': self.model.get_vocab_size(),
                 'timestamp': time.time()
             })
-            
-            print(f"Epoch {epoch+1}/{epochs}: train_loss={train_loss:.4f}, val_loss={val_loss:.4f}")
-            print(f"  Vocabulary size: {self.model.get_vocab_size()}")
-            
+
+            epoch_pbar.set_postfix({
+                'train_loss': f'{train_loss:.4f}',
+                'val_loss': f'{val_loss:.4f}',
+                'vocab': self.model.get_vocab_size()
+            })
+
             # Save best model
             if val_loss < best_val_loss and save_path:
                 best_val_loss = val_loss
                 self._save_checkpoint(save_path, epoch, val_loss)
-                print(f"  Saved best model (val_loss: {val_loss:.4f})")
+                epoch_pbar.write(f"  Saved best model (val_loss: {val_loss:.4f})")
         
         self._establish_baseline_confidence(val_loader)
         
@@ -368,7 +375,7 @@ class OnlineLearner:
         self.model.eval()
         
         with torch.no_grad():
-            for batch_inputs, batch_targets in val_loader:
+            for batch_inputs, batch_targets in tqdm(val_loader, desc="Computing baseline confidence", leave=False):
                 batch_size, seq_len = batch_inputs.shape
                 
                 for i in range(min(batch_size, 10)):
