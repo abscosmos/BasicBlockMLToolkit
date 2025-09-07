@@ -1,5 +1,6 @@
 import torch
 from typing import Optional, Any
+from dataclasses import dataclass
 import os
 from pathlib import Path
 
@@ -7,6 +8,12 @@ from bb_toolkit import TraceData, BasicBlockTokenizer
 from ml.model import OnlineBasicBlockPredictor, create_model
 from ml.online_trainer import OnlineLearner
 
+@dataclass
+class PredictorConfig:
+    context_length: int
+    embedding_dim: int
+    num_layers: int
+    num_heads: int
 
 class BasicBlockPredictor:
     """
@@ -20,7 +27,13 @@ class BasicBlockPredictor:
         tokenizer_path: Optional[os.PathLike] = None,
         auto_update: bool = True,
         update_threshold: float = 0.1,
-        update_frequency: int = 10
+        update_frequency: int = 10,
+        config: PredictorConfig = PredictorConfig(
+            context_length=64,
+            embedding_dim=512,
+            num_layers=6,
+            num_heads=8
+        )
     ):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.auto_update = auto_update
@@ -43,10 +56,20 @@ class BasicBlockPredictor:
             print(f"Loaded model: {self.get_model_stats()}")
         else:
             # create fresh model if no saved model exists
-            self.model = create_model(
-                initial_vocab_size=max(1000, len(self.tokenizer)),
-                context_length=64
-            ).to(self.device)
+            initial_vocab_size = max(1000, len(self.tokenizer))
+
+            model = OnlineBasicBlockPredictor(
+                initial_vocab_size=initial_vocab_size,
+                context_length=config.context_length,
+                embedding_dim=config.embedding_dim,
+                num_layers=config.num_layers,
+                num_heads=config.num_heads,
+                dropout=0.1
+            )
+
+            print(f"Created OL model with {sum(p.numel() for p in model.parameters()):,} params")
+            print(f"Initial vocabulary size: {initial_vocab_size}")
+            print(f"Config: {config}")
             
             self.learner = OnlineLearner(
                 self.model,
