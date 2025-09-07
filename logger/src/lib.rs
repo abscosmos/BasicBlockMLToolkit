@@ -76,7 +76,7 @@ pub extern "C" fn dr_client_main(
     argv: *const *const c_char,
 ) {
     unsafe {
-        dr_set_client_name(c"bblogger".as_ptr(), c"https://github.com/abscosmos/basic-block-trace".as_ptr());
+        dr_set_client_name(c"bblogger".as_ptr(), c"https://github.com/abscosmos/BasicBlockMLToolkit".as_ptr());
 
         dr_register_exit_event(Some(exit_event));
 

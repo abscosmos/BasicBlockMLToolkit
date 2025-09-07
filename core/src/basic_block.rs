@@ -9,10 +9,22 @@ pub struct Application {
     pub address: NonZeroUsize,
 }
 
+impl fmt::Display for Application {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}@0x{:x}", self.name, self.address.get())
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct BasicBlockLocation {
     pub application: Application,
     pub relative_addr: usize,
+}
+
+impl fmt::Display for BasicBlockLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}+0x{:x}", self.application, self.relative_addr)
+    }
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]

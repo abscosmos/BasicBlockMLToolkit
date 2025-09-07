@@ -7,10 +7,11 @@ use std::path::PathBuf;
 use pyo3::{pyclass, pymethods, pymodule, PyResult};
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyModule, PyModuleMethods};
+use serde::{Deserialize, Serialize};
 
 #[pyclass(eq, hash, frozen, str)]
 #[repr(transparent)]
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct BasicBlock(bb_core::BasicBlock);
 
 #[pymethods]
@@ -39,7 +40,7 @@ impl fmt::Display for SymbolizedBasicBlock {
 
 #[pyclass(eq, hash, frozen)]
 #[repr(transparent)]
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct BasicBlockLocation(bb_core::BasicBlockLocation);
 
 #[pymethods]
@@ -107,6 +108,48 @@ impl TraceData {
             blocks,
             order,
         })
+    }
+
+    pub fn sequence(&self) -> BasicBlockSequence {
+        let mut blocks = Vec::with_capacity(self.order.len());
+
+        for loc in &self.order {
+            let block = self.blocks.get(loc).expect("corresponding block should exist");
+
+            blocks.push((loc.clone(), block.clone()));
+        }
+
+        BasicBlockSequence(blocks)
+    }
+}
+
+// TODO: remove code duplication for related methods?
+#[pyclass(frozen, eq, hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct BasicBlockSequence(pub Vec<(BasicBlockLocation, BasicBlock)>);
+
+#[pymethods]
+impl BasicBlockSequence {
+    pub fn blocks(&self) -> Vec<BasicBlock> {
+        self.0.iter()
+            .map(|(_, block)| block)
+            .cloned()
+            .collect()
+    }
+
+    pub fn symbolized_blocks(&self) -> Vec<SymbolizedBasicBlock> {
+        self.blocks()
+            .iter()
+            .map(BasicBlock::symbolize)
+            .collect()
+    }
+
+    pub fn to_json(&self, pretty: bool) -> String {
+        if pretty {
+            serde_json::to_string_pretty(self).expect("should be valid to serialize")
+        } else {
+            serde_json::to_string(self).expect("should be valid to serialize")
+        }
     }
 }
 

@@ -48,6 +48,48 @@ TraceSummary {
 ```
 > The `.trace` file is a binary file, and to read it, it needs to be deserialized.
 
+## Machine Learning (`/ml`)
+Set of tools relating to tokenizing, training models, and running inference.
+
+**Setup**
+
+Make sure the virutal environment is active & dependencies are installed:
+```
+source .venv/bin/activate
+uv pip install -e .
+```
+
+Build ffi components:
+```
+cd ./ffi
+cargo build
+maturin develop
+cd ../
+```
+
+**Usage**
+
+The `/ml` folder contains various utilities relating to machine learning.
+- The tokenizer is built in Rust, and exposed via ffi at `bb_toolkit.BasicBlockTokenizer`
+- The model is a GPT-2 transformer neural network model, located at `ml.model.BasicBlockPredictor`
+- Tools related to handling training & model data are available in `ml.dataset`
+- A training loop is available in `ml.train`
+- A function for making inferences is available at `ml.inference`
+
+Additionally, `ml/main.py` has a demo script that tokenizes the basic blocks, trains a model, and runs inference. To use it:
+1. Collect traces of a wide selection of programs using the logger (`/logger`).
+   To do this, you may want to use the (WIP) `bulk_collect` binary available on the `incremental` branch: [analyze/src/bin/bulk_collect.rs](../incremental/analyze/src/bin/bulk_collect.rs).
+2. Update the paths in `ml/main.py` to point to your traces, and set model & tokenizer save paths.
+   You may need to create a run directory.
+   ```
+   # if your tokenizer & model save paths still point to ./run
+   mkdir run
+   ```
+3. Run the script with `uv`.
+   ```
+   uv run --active ml/main.py
+   ```
+
 ## Setup
 First, clone this repository:
 ```
@@ -61,6 +103,17 @@ Install the necessary packages:
 sudo apt install -y cmake gcc g++ g++-multilib clang zlib1g-dev libunwind-dev libsnappy-dev liblz4-dev libxxhash-dev perl binutils
 # install rust toolchain
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+# install uv (python package manager)
+wget -qO- https://astral.sh/uv/install.sh | sh
+# maturin builds the rust->python ffi components
+cargo install --locked maturin
+```
+
+Create and activate a python virtual environment and install dependencies:
+```
+uv venv
+source .venv/bin/activate
+uv pip install -e .
 ```
 
 Next, install the DynamoRIO 11.90 executable itself:

@@ -6,3 +6,5 @@ mod symbolize;
 pub use symbolize::*;
 mod trace;
 pub use trace::*;
+mod sequence;
+pub use sequence::*;
