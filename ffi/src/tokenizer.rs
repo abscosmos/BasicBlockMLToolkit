@@ -104,6 +104,11 @@ impl BasicBlockTokenizer {
             block_to_token.insert(block.clone(), i + Self::SPECIAL_TOKEN_COUNT);
         }
 
+        assert_eq!(
+            block_to_token.len(), token_to_block.len(),
+            "duplicate blocks in mapping"
+        );
+
         Self {
             block_to_token,
             token_to_block,
