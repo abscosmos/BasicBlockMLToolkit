@@ -24,7 +24,10 @@ class BasicBlockPredictor:
     ):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.auto_update = auto_update
-        
+
+        # cache for repeated contexts
+        self._prediction_cache = {}
+
         # load or create tokenizer
         if tokenizer_path and os.path.exists(tokenizer_path):
             self.tokenizer = BasicBlockTokenizer.load_from_mapping(tokenizer_path)
@@ -51,8 +54,6 @@ class BasicBlockPredictor:
             )
         
         self.model.eval()
-        # cache for repeated contexts
-        self._prediction_cache = {}
     
     def predict_next_blocks(
         self,
