@@ -38,7 +38,8 @@ class OnlineBasicBlockPredictor(nn.Module):
         embedding_dim: int = 512,
         num_layers: int = 6,
         num_heads: int = 8,
-        dropout: float = 0.1
+        dropout: float = 0.1,
+        device: Optional[torch.device] = None,
     ):
         super().__init__()
 
@@ -47,7 +48,8 @@ class OnlineBasicBlockPredictor(nn.Module):
         
         self.embedding = DynamicEmbedding(
             embedding_dim=embedding_dim,
-            initial_vocab_size=initial_vocab_size
+            initial_vocab_size=initial_vocab_size,
+            device=device
         )
         
         self.pos_encoding = PositionalEncoding(embedding_dim, max_len=context_length * 2)
@@ -135,6 +137,8 @@ class OnlineBasicBlockPredictor(nn.Module):
         """
         self.eval()
         with torch.no_grad():
+            input_sequence = input_sequence.to(self.device)
+            
             if len(input_sequence) > self.context_length:
                 input_sequence = input_sequence[-self.context_length:]
             

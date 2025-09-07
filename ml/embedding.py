@@ -111,13 +111,14 @@ class DynamicEmbedding(nn.Module):
     
     @property
     def device(self) -> torch.device:
-        return self._device
+        # Return the actual device of the embedding weights
+        return self.embedding.weight.device
     
     def to(self, device: torch.device):
         """Move embedding to specified device"""
         self._device = device
-        super().to(device)
-        return self
+        self.embedding = self.embedding.to(device)
+        return super().to(device)
     
     def state_dict(self, *args, **kwargs):
         """Custom state dict that includes metadata"""
