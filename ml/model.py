@@ -106,6 +106,9 @@ class OnlineBasicBlockPredictor(nn.Module):
         transformed = self.transformer(embeddings, mask=mask)
 
         current_vocab_size = max(self.embedding.get_vocab_size(), input_ids.max().item() + 1)
+        if labels is not None:
+            current_vocab_size = max(current_vocab_size, labels.max().item() + 1)
+        
         self._ensure_output_projection(current_vocab_size)
 
         logits = self.output_projection(transformed)
