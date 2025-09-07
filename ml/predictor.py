@@ -3,7 +3,7 @@ from typing import Optional, Any
 import os
 from pathlib import Path
 
-from bb_toolkit import TraceData, BasicBlockTokenizer
+from bb_toolkit import TraceData, BasicBlockTokenizer, BasicBlock, SymbolizedBasicBlock
 from ml.model import OnlineBasicBlockPredictor, ModelConfig
 from ml.online_trainer import OnlineLearner
 
@@ -63,53 +63,54 @@ class BasicBlockPredictor:
         
         self.model.eval()
     
-    def predict_next_blocks(
+    def predict_next_block_from_sequence(
         self,
-        execution_trace: list[TraceData],
+        input_sequence: list[int] | list[SymbolizedBasicBlock] | list[BasicBlock],
         top_k: int = 5,
         use_cache: bool = True
     ) -> list[tuple[int, float]]:
         """
-        Predict the next most likely basic blocks given execution trace(s).
+        Predict next blocks from a sequence of tokens or symbolized basic blocks.
         
         Args:
-            execution_trace: List of trace data or single trace
-            context_length: Number of recent blocks to use as context
+            input_sequence: Either list of token IDs or list of SymbolizedBasicBlock objects
             top_k: Number of top predictions to return
-            use_cache: Whether to use prediction caching
+            use_cache: Whether to use prediction cache
             
         Returns:
-            List of (token_id, probability) tuples sorted by probability
+            List of prediction dictionaries with token_id, probability, and block_signature
         """
-        # handle single trace input
-        if isinstance(execution_trace, TraceData):
-            execution_trace = [execution_trace]
-        
-        # process all traces into token sequences
-        all_sequences = []
-        for trace in execution_trace:
-            sequence = self.tokenizer.process_trace(trace)
-            if sequence:
-                all_sequences.append(sequence)
-        
-        if not all_sequences:
+        # Handle different input types
+        if not input_sequence:
             return []
-        
-        # use the most recent sequence for prediction
-        latest_sequence = all_sequences[-1]
-        
-        # take the most recent context_length tokens
-        if len(latest_sequence) > self.model.config.context_length:
-            context = latest_sequence[-self.model.config.context_length:]
+            
+        if isinstance(input_sequence[0], int):
+            token_sequence = input_sequence
+        elif isinstance(input_sequence[0], (BasicBlock, SymbolizedBasicBlock)):
+            # Handle both BasicBlock and SymbolizedBasicBlock objects
+            token_sequence = []
+            for block in input_sequence:
+                symbolized_block = block.symbolize() if isinstance(block, BasicBlock) else block
+
+                token_sequence.append(self.tokenizer.get_token(symbolized_block))
+            
+            if not token_sequence:
+                return []
         else:
-            context = latest_sequence
+            raise TypeError(f"Unsupported input type: {type(input_sequence[0])}. Expected int, BasicBlock, or SymbolizedBasicBlock.")
         
-        if len(context) == 0:
-            return []
+        # Take the most recent context_length tokens
+        context_length = self.model.config.context_length
+        if len(token_sequence) > context_length:
+            context = token_sequence[-context_length:]
+        else:
+            # add padding
+            padding_needed = context_length - len(token_sequence)
+            context = [BasicBlockTokenizer.PADDING_TOKEN] * padding_needed + token_sequence
         
-        # check cache first
+        # Check cache first
         if use_cache:
-            cache_key = tuple(context)
+            cache_key = hash(tuple(context))
             if cache_key in self._prediction_cache:
                 return self._prediction_cache[cache_key]
         
@@ -119,18 +120,10 @@ class BasicBlockPredictor:
         
         # cache result
         if use_cache and predictions:
-            cache_key = tuple(context)
             self._prediction_cache[cache_key] = predictions
-            
-            # simple cache cleanup - keep only most recent 1000 entries
-            if len(self._prediction_cache) > 1000:
-                # remove oldest entries (approximate)
-                old_keys = list(self._prediction_cache.keys())[:-800]
-                for key in old_keys:
-                    del self._prediction_cache[key]
-        
+
         return predictions
-    
+
     def process_new_traces(
         self,
         new_traces: list[TraceData],
