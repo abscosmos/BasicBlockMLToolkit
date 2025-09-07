@@ -1,19 +1,11 @@
 import torch
 from typing import Optional, Any
-from dataclasses import dataclass
 import os
 from pathlib import Path
 
 from bb_toolkit import TraceData, BasicBlockTokenizer
-from ml.model import OnlineBasicBlockPredictor, create_model
+from ml.model import OnlineBasicBlockPredictor, ModelConfig
 from ml.online_trainer import OnlineLearner
-
-@dataclass
-class PredictorConfig:
-    context_length: int
-    embedding_dim: int
-    num_layers: int
-    num_heads: int
 
 class BasicBlockPredictor:
     """
@@ -28,12 +20,7 @@ class BasicBlockPredictor:
         auto_update: bool = True,
         update_threshold: float = 0.1,
         update_frequency: int = 10,
-        config: PredictorConfig = PredictorConfig(
-            context_length=64,
-            embedding_dim=512,
-            num_layers=6,
-            num_heads=8
-        )
+        config: Optional[ModelConfig] = None
     ):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.auto_update = auto_update
@@ -58,18 +45,14 @@ class BasicBlockPredictor:
             # create fresh model if no saved model exists
             initial_vocab_size = max(1000, len(self.tokenizer))
 
-            model = OnlineBasicBlockPredictor(
+            self.model = OnlineBasicBlockPredictor(
                 initial_vocab_size=initial_vocab_size,
-                context_length=config.context_length,
-                embedding_dim=config.embedding_dim,
-                num_layers=config.num_layers,
-                num_heads=config.num_heads,
-                dropout=0.1
+                config=config
             )
 
-            print(f"Created OL model with {sum(p.numel() for p in model.parameters()):,} params")
+            print(f"Created OL model with {sum(p.numel() for p in self.model.parameters()):,} params")
             print(f"Initial vocabulary size: {initial_vocab_size}")
-            print(f"Config: {config}")
+            print(f"Config: {self.model.config}")
             
             self.learner = OnlineLearner(
                 self.model,
@@ -83,7 +66,6 @@ class BasicBlockPredictor:
     def predict_next_blocks(
         self,
         execution_trace: list[TraceData],
-        context_length: int = 64,
         top_k: int = 5,
         use_cache: bool = True
     ) -> list[tuple[int, float]]:
@@ -117,8 +99,8 @@ class BasicBlockPredictor:
         latest_sequence = all_sequences[-1]
         
         # take the most recent context_length tokens
-        if len(latest_sequence) > context_length:
-            context = latest_sequence[-context_length:]
+        if len(latest_sequence) > self.model.config.context_length:
+            context = latest_sequence[-self.model.config.context_length:]
         else:
             context = latest_sequence
         
@@ -269,10 +251,15 @@ class BasicBlockPredictor:
         # get vocab size from checkpoint or tokenizer
         saved_vocab_size = checkpoint.get('tokenizer_vocab_size', len(self.tokenizer))
 
+        if 'model_config' not in checkpoint:
+            raise ValueError("Checkpoint missing required 'model_config'. Cannot load model architecture.")
+        
+        config: ModelConfig = checkpoint['model_config']
+
         # create model with appropriate vocab size
-        model = create_model(
+        model = OnlineBasicBlockPredictor(
             initial_vocab_size=max(1000, saved_vocab_size, len(self.tokenizer)),
-            context_length=64
+            config=config
         ).to(self.device)
         
         # ensure model components match saved state

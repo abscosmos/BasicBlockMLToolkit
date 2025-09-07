@@ -2,7 +2,16 @@ import torch
 import torch.nn as nn
 import math
 from typing import Optional
+from dataclasses import dataclass
 from ml.embedding import DynamicEmbedding
+
+@dataclass
+class ModelConfig:
+    context_length: int
+    embedding_dim: int
+    num_layers: int
+    num_heads: int
+    dropout: float
 
 class PositionalEncoding(nn.Module):
     def __init__(self, embedding_dim: int, max_len: int = 5000):
@@ -34,42 +43,43 @@ class OnlineBasicBlockPredictor(nn.Module):
     def __init__(
         self,
         initial_vocab_size: int = 1000,
-        context_length: int = 64,
-        embedding_dim: int = 512,
-        num_layers: int = 6,
-        num_heads: int = 8,
-        dropout: float = 0.1,
+        config: Optional[ModelConfig] = None,
         device: Optional[torch.device] = None,
     ):
         super().__init__()
 
-        self.context_length = context_length
-        self.embedding_dim = embedding_dim
-        
+        self.config = config or ModelConfig(
+            context_length=64,
+            embedding_dim=512,
+            num_layers=6,
+            num_heads=8,
+            dropout=0.1,
+        )
+
         self.embedding = DynamicEmbedding(
-            embedding_dim=embedding_dim,
+            embedding_dim=self.config.embedding_dim,
             initial_vocab_size=initial_vocab_size,
             device=device
         )
         
-        self.pos_encoding = PositionalEncoding(embedding_dim, max_len=context_length * 2)
+        self.pos_encoding = PositionalEncoding(self.config.embedding_dim, max_len=self.config.context_length * 2)
         
         encoder_layer = nn.TransformerEncoderLayer(
-            d_model=embedding_dim,
-            nhead=num_heads,
-            dropout=dropout,
+            d_model=self.config.embedding_dim,
+            nhead=self.config.num_heads,
+            dropout=self.config.dropout,
             batch_first=True
         )
-        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers)
+        self.transformer = nn.TransformerEncoder(encoder_layer, self.config.num_layers)
         
         self.output_projection = None
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(self.config.dropout)
 
     def _ensure_output_projection(self, vocab_size: int):
         """Ensure output projection matches current vocabulary size"""
         if self.output_projection is None or self.output_projection.out_features < vocab_size:
             old_proj = self.output_projection
-            self.output_projection = nn.Linear(self.embedding_dim, vocab_size).to(self.device)
+            self.output_projection = nn.Linear(self.config.embedding_dim, vocab_size).to(self.device)
             
             # copy existing weights if we had a previous projection
             if old_proj is not None:
@@ -142,8 +152,8 @@ class OnlineBasicBlockPredictor(nn.Module):
         with torch.no_grad():
             input_sequence = input_sequence.to(self.device)
             
-            if len(input_sequence) > self.context_length:
-                input_sequence = input_sequence[-self.context_length:]
+            if len(input_sequence) > self.config.context_length:
+                input_sequence = input_sequence[-self.config.context_length:]
             
             # add batch dimension
             input_ids = input_sequence.unsqueeze(0)
@@ -166,36 +176,3 @@ class OnlineBasicBlockPredictor(nn.Module):
     
     def get_vocab_size(self) -> int:
         return self.embedding.get_vocab_size()
-
-def create_model(initial_vocab_size: int = 1000, context_length: int = 64) -> OnlineBasicBlockPredictor:
-    if initial_vocab_size < 1000:
-        embedding_dim = 256
-        num_layers = 4
-        num_heads = 4
-    elif initial_vocab_size < 5000:
-        embedding_dim = 384
-        num_layers = 6
-        num_heads = 6
-    else:
-        embedding_dim = 512
-        num_layers = 6
-        num_heads = 8
-
-    model = OnlineBasicBlockPredictor(
-        initial_vocab_size=initial_vocab_size,
-        context_length=context_length,
-        embedding_dim=embedding_dim,
-        num_layers=num_layers,
-        num_heads=num_heads,
-        dropout=0.1
-    )
-
-    print(f"Created online learning model with {sum(p.numel() for p in model.parameters()):,} parameters")
-    print(f"Initial vocabulary size: {initial_vocab_size}")
-    print(f"Context length: {context_length}")
-    print(f"Embedding dimension: {embedding_dim}")
-    print(f"Number of layers: {num_layers}")
-
-    return model
-
-BasicBlockPredictor = OnlineBasicBlockPredictor

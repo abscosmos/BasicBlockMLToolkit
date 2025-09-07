@@ -11,6 +11,7 @@ from tqdm import tqdm
 
 from ml.model import OnlineBasicBlockPredictor
 from ml.dataset import BasicBlockDataset, create_training_data
+from ml.model import ModelConfig
 from bb_toolkit import BasicBlockTokenizer
 
 
@@ -84,7 +85,7 @@ class OnlineLearner:
         
         train_loader, val_loader, test_loader = create_training_data(
             tokenized_sequences=trace_sequences,
-            sequence_length=self.model.context_length,
+            sequence_length=self.model.config.context_length,
             validation_size=validation_split,
             test_size=test_split,
             batch_size=batch_size,
@@ -227,7 +228,7 @@ class OnlineLearner:
         try:
             train_loader, _, _ = create_training_data(
                 tokenized_sequences=update_sequences,
-                sequence_length=self.model.context_length,
+                sequence_length=self.model.config.context_length,
                 validation_size=0.0,
                 test_size=0.0,
                 batch_size=min(8, len(update_sequences)),
@@ -441,6 +442,7 @@ class OnlineLearner:
         checkpoint = {
             'model_state_dict': self.model.state_dict(),
             'tokenizer_vocab_size': len(self.tokenizer),
+            'model_config': self.model.config,
             'epoch': epoch,
             'val_loss': val_loss,
             'training_history': self.training_history,
