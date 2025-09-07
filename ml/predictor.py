@@ -252,8 +252,21 @@ class BasicBlockPredictor:
             context_length=64
         ).to(self.device)
         
-        # load model state
-        model.load_state_dict(checkpoint['model_state_dict'])
+        # ensure model components match saved state
+        state_dict = checkpoint['model_state_dict']
+        
+        # check if we need to expand embedding for saved state
+        if 'embedding.current_vocab_size' in state_dict:
+            target_vocab_size = state_dict['embedding.current_vocab_size'].item()
+            model.embedding.expand_vocabulary(target_vocab_size)
+        
+        # ensure output projection exists with correct size
+        if 'output_projection.weight' in state_dict:
+            output_size = state_dict['output_projection.weight'].shape[0]
+            model._ensure_output_projection(output_size)
+        
+        # load model state with strict=False to handle missing/extra keys
+        model.load_state_dict(state_dict, strict=False)
         
         # create learner and restore training state
         learner = OnlineLearner(
