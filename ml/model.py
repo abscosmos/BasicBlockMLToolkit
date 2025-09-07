@@ -103,8 +103,8 @@ class OnlineBasicBlockPredictor(nn.Module):
         mask = torch.triu(torch.ones(seq_len, seq_len, device=input_ids.device), diagonal=1).bool()
         
         # transform through encoder with causal mask
-        transformed = self.transformer(embeddings, src_mask=mask)
-        
+        transformed = self.transformer(embeddings, mask=mask)
+
         current_vocab_size = max(self.embedding.get_vocab_size(), input_ids.max().item() + 1)
         self._ensure_output_projection(current_vocab_size)
 
