@@ -20,9 +20,10 @@ class BasicBlockPredictor:
         auto_update: bool = True,
         update_threshold: float = 0.1,
         update_frequency: int = 10,
+        device: Optional[torch.device] = None,
         config: Optional[ModelConfig] = None
     ):
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = device or torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.auto_update = auto_update
 
         # cache for repeated contexts
