@@ -242,8 +242,8 @@ class BasicBlockPredictor:
         update_frequency: int
     ) -> tuple[OnlineBasicBlockPredictor, OnlineLearner]:
         """Load model and create learner from checkpoint."""
-        checkpoint = torch.load(model_path, map_location=self.device)
-        
+        checkpoint = torch.load(model_path, map_location=self.device, weights_only=False)
+
         # create model with appropriate vocab size
         model = create_model(
             initial_vocab_size=max(1000, len(self.tokenizer)),

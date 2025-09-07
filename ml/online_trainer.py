@@ -452,7 +452,7 @@ class OnlineLearner:
     
     def load_checkpoint(self, path: str) -> dict[str, Any]:
         """Load model checkpoint and restore training state."""
-        checkpoint = torch.load(path, map_location=self.model.device)
+        checkpoint = torch.load(path, map_location=self.model.device, weights_only=False)
         
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.training_history = checkpoint.get('training_history', self.training_history)
