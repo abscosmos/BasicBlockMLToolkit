@@ -89,6 +89,10 @@ class DynamicEmbedding(nn.Module):
         Returns:
             embeddings: Embeddings of shape (batch_size, seq_len, embedding_dim)
         """
+        # bounds check
+        if token_ids.numel() == 0:
+            return torch.empty((*token_ids.shape, self.embedding_dim), device=self._device)
+
         max_token_id = token_ids.max().item()
         if max_token_id >= self.embedding.num_embeddings:
             self.expand_vocabulary(max_token_id + 1)
