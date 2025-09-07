@@ -47,8 +47,9 @@ class BasicBlockPredictor:
 
             self.model = OnlineBasicBlockPredictor(
                 initial_vocab_size=initial_vocab_size,
-                config=config
-            )
+                config=config,
+                device=self.device
+            ).to(self.device)
 
             print(f"Created OL model with {sum(p.numel() for p in self.model.parameters()):,} params")
             print(f"Initial vocabulary size: {initial_vocab_size}")
@@ -251,8 +252,9 @@ class BasicBlockPredictor:
 
         # create model with appropriate vocab size
         model = OnlineBasicBlockPredictor(
+            device=self.device,
             initial_vocab_size=max(1000, saved_vocab_size, len(self.tokenizer)),
-            config=config
+            config=config,
         ).to(self.device)
         
         # ensure model components match saved state

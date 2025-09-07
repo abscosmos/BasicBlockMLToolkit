@@ -42,9 +42,9 @@ class PositionalEncoding(nn.Module):
 class OnlineBasicBlockPredictor(nn.Module):
     def __init__(
         self,
+        device: torch.device,
         initial_vocab_size: int = 1000,
         config: Optional[ModelConfig] = None,
-        device: Optional[torch.device] = None,
     ):
         super().__init__()
 
