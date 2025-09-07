@@ -160,6 +160,8 @@ fn bb_toolkit(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<BasicBlockLocation>()?;
     m.add_class::<Application>()?;
     m.add_class::<TraceData>()?;
+    
+    m.add_class::<BasicBlockSequence>()?;
 
     m.add_class::<tokenizer::BasicBlockTokenizer>()?;
 

@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use hashbrown::HashMap;
 use pyo3::{pyclass, pymethods, PyResult};
 use pyo3::exceptions::PyValueError;
-use crate::{SymbolizedBasicBlock, TraceData};
+use crate::{SymbolizedBasicBlock, TraceData, BasicBlockSequence};
 
 #[pyclass]
 #[derive(Default, Debug, Clone)]
@@ -76,17 +76,15 @@ impl BasicBlockTokenizer {
     }
 
     pub fn process_trace(&mut self, trace: &TraceData) -> Vec<usize> {
-        let mut token_seq = Vec::with_capacity(trace.order.len());
+        self.process_sequence(&trace.sequence())
+    }
 
-        for block_loc in &trace.order {
-            let symbolized = trace.blocks.get(block_loc)
-                .expect("all block locs in order should exist in mapping")
-                .symbolize();
-
-            token_seq.push(self.add_block(symbolized));
-        }
-
-        token_seq
+    pub fn process_sequence(&mut self, sequence: &BasicBlockSequence) -> Vec<usize> {
+        sequence
+            .symbolized_blocks()
+            .into_iter()
+            .map(|block| self.add_block(block))
+            .collect()
     }
 
     pub fn __len__(&self) -> usize {
