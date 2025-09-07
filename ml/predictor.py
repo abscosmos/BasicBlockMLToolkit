@@ -243,10 +243,12 @@ class BasicBlockPredictor:
     ) -> tuple[OnlineBasicBlockPredictor, OnlineLearner]:
         """Load model and create learner from checkpoint."""
         checkpoint = torch.load(model_path, map_location=self.device, weights_only=False)
+        # get vocab size from checkpoint or tokenizer
+        saved_vocab_size = checkpoint.get('tokenizer_vocab_size', len(self.tokenizer))
 
         # create model with appropriate vocab size
         model = create_model(
-            initial_vocab_size=max(1000, len(self.tokenizer)),
+            initial_vocab_size=max(1000, saved_vocab_size, len(self.tokenizer)),
             context_length=64
         ).to(self.device)
         
