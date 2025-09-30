@@ -455,7 +455,9 @@ class OnlineLearner:
             'training_history': self.training_history,
             'baseline_confidence': self.baseline_confidence,
             'update_count': self.update_count,
-            'trace_count': self.trace_count
+            'trace_count': self.trace_count,
+            'initial_optimizer_state_dict': self.initial_optimizer.state_dict(),
+            'incremental_optimizer_state_dict': self.incremental_optimizer.state_dict()
         }
         torch.save(checkpoint, path)
     
@@ -468,6 +470,12 @@ class OnlineLearner:
         self.baseline_confidence = checkpoint.get('baseline_confidence', None)
         self.update_count = checkpoint.get('update_count', 0)
         self.trace_count = checkpoint.get('trace_count', 0)
+        
+        # restore optimizer states if available
+        if 'initial_optimizer_state_dict' in checkpoint:
+            self.initial_optimizer.load_state_dict(checkpoint['initial_optimizer_state_dict'])
+        if 'incremental_optimizer_state_dict' in checkpoint:
+            self.incremental_optimizer.load_state_dict(checkpoint['incremental_optimizer_state_dict'])
         
         return {
             'epoch': checkpoint.get('epoch', 0),
