@@ -302,4 +302,10 @@ class BasicBlockPredictor:
         learner.update_count = checkpoint.get('update_count', 0)
         learner.trace_count = checkpoint.get('trace_count', 0)
         
+        # restore optimizer states if available
+        if 'initial_optimizer_state_dict' in checkpoint:
+            learner.initial_optimizer.load_state_dict(checkpoint['initial_optimizer_state_dict'])
+        if 'incremental_optimizer_state_dict' in checkpoint:
+            learner.incremental_optimizer.load_state_dict(checkpoint['incremental_optimizer_state_dict'])
+        
         return model, learner
