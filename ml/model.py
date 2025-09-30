@@ -3,6 +3,8 @@ import torch.nn as nn
 import math
 from typing import Optional
 from dataclasses import dataclass
+
+from bb_toolkit import BasicBlockTokenizer
 from ml.embedding import DynamicEmbedding
 
 @dataclass
@@ -59,6 +61,7 @@ class OnlineBasicBlockPredictor(nn.Module):
         self.embedding = DynamicEmbedding(
             embedding_dim=self.config.embedding_dim,
             initial_vocab_size=initial_vocab_size,
+            padding_idx=BasicBlockTokenizer.PADDING_TOKEN,
             device=device
         )
         
