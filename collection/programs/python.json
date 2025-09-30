@@ -1,0 +1,16 @@
+{
+  "program_id": "python_computation",
+  "setup_commands": [
+    "echo 'import math\nresult = sum(i*i for i in range(1000))\nprint(f\"Sum of squares: {result}\")' > compute.py",
+    "echo 'import json\ndata = {\"numbers\": list(range(100)), \"total\": sum(range(100))}\nprint(json.dumps(data))' > json_work.py",
+    "echo 'def fibonacci(n):\n    if n <= 1: return n\n    return fibonacci(n-1) + fibonacci(n-2)\nprint(f\"fib(20) = {fibonacci(20)}\")' > fib.py"
+  ],
+  "trace_commands": [
+    "python3 compute.py",
+    "python3 json_work.py",
+    "python3 fib.py"
+  ],
+  "cleanup_commands": [
+    "rm -f *.py"
+  ]
+}

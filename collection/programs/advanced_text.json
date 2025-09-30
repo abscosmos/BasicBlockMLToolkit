@@ -1,0 +1,27 @@
+{
+  "program_id": "advanced_text_processing",
+  "setup_commands": [
+    "echo -e 'Col1\\tCol2\\tCol3\\nData1\\tData2\\tData3\\nInfo1\\tInfo2\\tInfo3' > table.txt",
+    "echo -e 'apple\\nbanana\\ncherry' > list1.txt", 
+    "echo -e 'banana\\ndate\\nfig' > list2.txt",
+    "echo -e 'This is a long line that needs to be formatted properly for display purposes.' > longline.txt",
+    "echo -e 'line 1\\nline 2\\nline 3\\nline 4\\nline 5' > numbered.txt"
+  ],
+  "trace_commands": [
+    "pr -t table.txt",
+    "column -t table.txt",
+    "paste list1.txt list2.txt",
+    "comm list1.txt list2.txt",
+    "nl numbered.txt",
+    "nl -b a numbered.txt",
+    "fold -w 20 longline.txt",
+    "rev numbered.txt",
+    "tee output1.txt < numbered.txt",
+    "unexpand table.txt",
+    "od -c numbered.txt | head -5",
+    "hexdump -C numbered.txt | head -5"
+  ],
+  "cleanup_commands": [
+    "rm -f table.txt list1.txt list2.txt longline.txt numbered.txt output1.txt"
+  ]
+}

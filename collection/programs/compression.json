@@ -1,0 +1,22 @@
+{
+  "program_id": "compression_tools",
+  "setup_commands": [
+    "mkdir -p compress_test",
+    "echo 'This is test data for compression algorithms' > compress_test/data.txt",
+    "echo 'More test content here' > compress_test/more.txt"
+  ],
+  "trace_commands": [
+    "gzip --help | head -5",
+    "gunzip --help | head -5", 
+    "tar --help | head -5",
+    "bzip2 --help | head -5",
+    "bunzip2 --help | head -5",
+    "xz --help | head -5",
+    "unxz --help | head -5",
+    "zip --help | head -5",
+    "unzip --help | head -5"
+  ],
+  "cleanup_commands": [
+    "rm -rf compress_test"
+  ]
+}

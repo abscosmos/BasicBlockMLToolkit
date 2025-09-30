@@ -1,0 +1,24 @@
+{
+  "program_id": "system_monitoring",
+  "setup_commands": [
+    "echo 'System monitoring test' > monitor_test.txt"
+  ],
+  "trace_commands": [
+    "free -h",
+    "uptime",
+    "vmstat 1 1",
+    "iostat --help | head -5",
+    "sar --help | head -5", 
+    "dmesg | tail -10",
+    "journalctl --help | head -5",
+    "systemctl --help | head -5",
+    "service --help | head -5",
+    "lscpu",
+    "lsusb",
+    "lspci | head -5",
+    "mount | head -5"
+  ],
+  "cleanup_commands": [
+    "rm -f monitor_test.txt"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "program_id": "text_processing",
+  "setup_commands": [
+    "echo -e 'apple,red,fruit\\nbanana,yellow,fruit\\ncarrot,orange,vegetable\\nspinach,green,vegetable' > data.csv",
+    "echo -e 'HELLO\\nworld\\nTEST\\ndata' > case_test.txt",
+    "echo -e 'aaaa\\nbbbb\\naaaa\\ncccc\\nbbbb' > duplicates.txt"
+  ],
+  "trace_commands": [
+    "cut -d',' -f1,3 data.csv",
+    "sort data.csv",
+    "uniq duplicates.txt",
+    "wc -l data.csv",
+    "echo 'HELLO world' | tr 'A-Z' 'a-z'",
+    "echo 'hello WORLD' | tr 'a-z' 'A-Z'",
+    "expr 15 + 27",
+    "expr 100 / 4",
+    "tac case_test.txt",
+    "fmt -w 20 data.csv"
+  ],
+  "cleanup_commands": [
+    "rm -f data.csv case_test.txt duplicates.txt"
+  ]
+}

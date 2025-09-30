@@ -1,0 +1,25 @@
+{
+  "program_id": "diff_tools",
+  "setup_commands": [
+    "echo -e 'line 1\\nline 2\\nline 3\\nline 4' > file1.txt",
+    "echo -e 'line 1\\nmodified line 2\\nline 3\\nline 5' > file2.txt",
+    "echo -e 'common\\nfile1 unique\\nshared' > merge1.txt",
+    "echo -e 'common\\nfile2 unique\\nshared' > merge2.txt",
+    "echo -e 'common\\nancestor line\\nshared' > ancestor.txt"
+  ],
+  "trace_commands": [
+    "diff file1.txt file2.txt",
+    "diff -u file1.txt file2.txt", 
+    "diff -c file1.txt file2.txt",
+    "diff3 merge1.txt ancestor.txt merge2.txt",
+    "sdiff file1.txt file2.txt",
+    "cmp file1.txt file2.txt || echo 'Files differ'",
+    "comm merge1.txt merge2.txt",
+    "patch --help | head -5",
+    "diff -u file1.txt file2.txt > changes.patch",
+    "wc -l changes.patch"
+  ],
+  "cleanup_commands": [
+    "rm -f file1.txt file2.txt merge1.txt merge2.txt ancestor.txt changes.patch"
+  ]
+}

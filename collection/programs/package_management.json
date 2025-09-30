@@ -1,0 +1,21 @@
+{
+  "program_id": "package_management", 
+  "setup_commands": [
+    "echo 'Package management testing' > pkg_test.txt"
+  ],
+  "trace_commands": [
+    "apt --help | head -5",
+    "apt-get --help | head -5",
+    "apt-cache --help | head -5",
+    "dpkg --help | head -5",
+    "dpkg -l | head -5",
+    "apt list --installed | head -5",
+    "snap --help | head -5",
+    "flatpak --help | head -5",
+    "pip --help | head -5",
+    "npm --help | head -5"
+  ],
+  "cleanup_commands": [
+    "rm -f pkg_test.txt"
+  ]
+}

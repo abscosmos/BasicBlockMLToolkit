@@ -1,0 +1,28 @@
+{
+  "program_id": "system_identity",
+  "setup_commands": [
+    "echo 'System identity checks' > identity_test.txt"
+  ],
+  "trace_commands": [
+    "uname -a",
+    "uname -s",
+    "uname -r", 
+    "uname -m",
+    "arch",
+    "nproc",
+    "groups",
+    "logname",
+    "users",
+    "w",
+    "who",
+    "whoami",
+    "id -u",
+    "id -g",
+    "printenv USER",
+    "printenv HOME",
+    "env | grep PATH"
+  ],
+  "cleanup_commands": [
+    "rm -f identity_test.txt"
+  ]
+}

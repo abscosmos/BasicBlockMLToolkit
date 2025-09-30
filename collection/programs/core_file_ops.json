@@ -1,0 +1,29 @@
+{
+  "program_id": "core_file_ops",
+  "setup_commands": [
+    "mkdir -p source target backup",
+    "echo 'Original file content' > source/original.txt",
+    "echo 'Another file' > source/another.txt",
+    "echo 'Link target' > source/linkme.txt",
+    "mkdir -p source/subdir",
+    "echo 'Subdirectory file' > source/subdir/sub.txt"
+  ],
+  "trace_commands": [
+    "cp source/original.txt target/copied.txt",
+    "cp -r source/ backup/",
+    "mv source/another.txt target/moved.txt",
+    "ln source/linkme.txt target/hardlink.txt",
+    "ln -s ../source/linkme.txt target/symlink.txt",
+    "readlink target/symlink.txt",
+    "realpath target/symlink.txt",
+    "which cp",
+    "whereis cp",
+    "test -f target/copied.txt && echo 'File exists'",
+    "[ -d backup ] && echo 'Directory exists'",
+    "rm target/moved.txt",
+    "rmdir source/subdir || rm -rf source/subdir"
+  ],
+  "cleanup_commands": [
+    "rm -rf source target backup"
+  ]
+}

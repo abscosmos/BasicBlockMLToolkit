@@ -1,0 +1,23 @@
+{
+  "program_id": "system_info",
+  "setup_commands": [
+    "echo 'System information collection' > info.txt"
+  ],
+  "trace_commands": [
+    "env | head -5",
+    "cal",
+    "lsblk",
+    "basename --version | head -1",
+    "chmod --help | head -3",
+    "chown --help | head -3", 
+    "ln --help | head -3",
+    "cp --help | head -3",
+    "mv --help | head -3",
+    "rm --help | head -3",
+    "mkdir --help | head -3",
+    "rmdir --help | head -3"
+  ],
+  "cleanup_commands": [
+    "rm -f info.txt"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "program_id": "gcc_compilation",
+  "setup_commands": [
+    "echo '#include <stdio.h>\nint factorial(int n) { return n <= 1 ? 1 : n * factorial(n-1); }\nint main() { for(int i=1; i<=10; i++) printf(\"%d! = %d\\n\", i, factorial(i)); return 0; }' > complex.c",
+    "echo '#include <stdio.h>\nint main() { printf(\"Hello World\\n\"); return 0; }' > hello.c"
+  ],
+  "trace_commands": [
+    "gcc -O2 complex.c -o complex_opt",
+    "gcc -g -O0 complex.c -o complex_debug", 
+    "gcc hello.c -o hello"
+  ],
+  "cleanup_commands": [
+    "rm -f *.c *.o complex_* hello"
+  ]
+}

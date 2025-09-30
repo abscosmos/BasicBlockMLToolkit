@@ -1,0 +1,25 @@
+{
+  "program_id": "development_tools",
+  "setup_commands": [
+    "echo 'int main() { return 0; }' > simple.c",
+    "echo 'print(\"Hello Python\")' > simple.py",
+    "echo '{\"name\": \"test\", \"version\": \"1.0\"}' > package.json"
+  ],
+  "trace_commands": [
+    "gcc --version | head -3",
+    "g++ --version | head -3", 
+    "clang --version | head -3",
+    "python3 --version",
+    "python --version",
+    "java --version | head -3",
+    "javac --version | head -3",
+    "rustc --version",
+    "cargo --version",
+    "go version",
+    "node --version",
+    "npm --version"
+  ],
+  "cleanup_commands": [
+    "rm -f simple.c simple.py package.json"
+  ]
+}

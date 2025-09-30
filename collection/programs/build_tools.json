@@ -1,0 +1,26 @@
+{
+  "program_id": "build_tools",
+  "setup_commands": [
+    "echo 'define(GREETING, Hello World)' > input.m4",
+    "echo 'GREETING from M4!' >> input.m4",
+    "echo 'int add(int a, int b) { return a + b; }' > math.c",
+    "echo '#include <stdio.h>\nextern int add(int, int);\nint main() { printf(\"%d\\n\", add(5, 3)); return 0; }' > main.c"
+  ],
+  "trace_commands": [
+    "m4 input.m4",
+    "lex --help | head -5",
+    "yacc --help | head -5",
+    "flex --help | head -5",
+    "bison --help | head -5",
+    "autoconf --help | head -5", 
+    "automake --help | head -5",
+    "gcc -c math.c -o math.o",
+    "gcc -c main.c -o main.o",
+    "gcc math.o main.o -o calculator",
+    "./calculator",
+    "ar rcs libmath.a math.o"
+  ],
+  "cleanup_commands": [
+    "rm -f input.m4 math.c main.c math.o main.o calculator libmath.a"
+  ]
+}

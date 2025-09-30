@@ -1,0 +1,16 @@
+{
+  "program_id": "awk_processing",
+  "setup_commands": [
+    "echo -e 'John,25,Engineer\\nJane,30,Doctor\\nBob,22,Student\\nAlice,28,Teacher' > people.csv",
+    "echo -e '10 20 30\\n40 50 60\\n70 80 90' > numbers.txt"
+  ],
+  "trace_commands": [
+    "awk -F',' '{print $1, $2}' people.csv",
+    "awk '{sum = $1 + $2 + $3; print sum}' numbers.txt",
+    "awk -F',' '$2 > 25 {print $1}' people.csv",
+    "awk 'BEGIN {print \"Name Age\"} {print NR, NF}' people.csv"
+  ],
+  "cleanup_commands": [
+    "rm -f people.csv numbers.txt"
+  ]
+}

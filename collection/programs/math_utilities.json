@@ -1,0 +1,24 @@
+{
+  "program_id": "math_utilities",
+  "setup_commands": [
+    "echo '12345' > number.txt",
+    "echo '987654321' > bignumber.txt"
+  ],
+  "trace_commands": [
+    "factor 12345",
+    "factor 987654321", 
+    "dc -e '2 3 ^ p'",
+    "dc -e '355 113 / p'",
+    "dc -e '10 2 / p'",
+    "shuf -i 1-100 -n 5",
+    "shuf number.txt",
+    "yes 'repeated text' | head -5",
+    "numfmt --to=iec 1024",
+    "numfmt --to=si 1000000",
+    "bc -l <<< 'scale=10; 22/7'",
+    "bc -l <<< 'scale=5; sqrt(2)'"
+  ],
+  "cleanup_commands": [
+    "rm -f number.txt bignumber.txt"
+  ]
+}

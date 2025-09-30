@@ -1,0 +1,23 @@
+{
+  "program_id": "stream_processing",
+  "setup_commands": [
+    "echo -e 'data1\\ndata2\\ndata3' > stream1.txt",
+    "echo -e 'info1\\ninfo2\\ninfo3' > stream2.txt",
+    "mkfifo pipe1 || echo 'Named pipe created'"
+  ],
+  "trace_commands": [
+    "cat stream1.txt | tee output.txt",
+    "cat stream1.txt stream2.txt | sort",
+    "echo 'hello world' | tr ' ' '\\n'",
+    "seq 1 10 | xargs echo",
+    "echo -e 'a\\nb\\nc' | xargs -I {} echo 'Item: {}'",
+    "find . -name '*.txt' -print0 | xargs -0 wc -l",
+    "yes | head -3",
+    "echo -e '1\\n2\\n3' | parallel echo 'Processing: {}'",
+    "timeout 1 cat || echo 'Timeout reached'",
+    "echo 'test data' | cat - stream1.txt"
+  ],
+  "cleanup_commands": [
+    "rm -f stream1.txt stream2.txt output.txt pipe1"
+  ]
+}

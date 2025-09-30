@@ -1,0 +1,26 @@
+{
+  "program_id": "file_operations", 
+  "setup_commands": [
+    "mkdir -p workdir/sub1/sub2",
+    "echo 'content1' > workdir/file1.txt",
+    "echo 'content2' > workdir/file2.txt",
+    "echo 'large content for splitting' > workdir/large.txt"
+  ],
+  "trace_commands": [
+    "stat workdir/file1.txt",
+    "split -b 5 workdir/large.txt workdir/split_",
+    "du -s workdir",
+    "du -sh workdir",
+    "df /",
+    "id",
+    "whoami", 
+    "hostname",
+    "sync",
+    "expand workdir/file1.txt",
+    "cat -v workdir/file1.txt",
+    "seq 1 10"
+  ],
+  "cleanup_commands": [
+    "rm -rf workdir"
+  ]
+}

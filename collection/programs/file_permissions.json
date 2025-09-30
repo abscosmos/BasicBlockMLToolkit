@@ -1,0 +1,23 @@
+{
+  "program_id": "file_permissions",
+  "setup_commands": [
+    "mkdir -p perm_test",
+    "echo 'Test file content' > perm_test/testfile.txt",
+    "echo '#!/bin/bash\necho \"Script executed\"' > perm_test/script.sh"
+  ],
+  "trace_commands": [
+    "ls -la perm_test/",
+    "chmod 644 perm_test/testfile.txt",
+    "chmod +x perm_test/script.sh",
+    "ls -la perm_test/",
+    "stat perm_test/testfile.txt",
+    "stat perm_test/script.sh",
+    "umask",
+    "umask 022",
+    "touch perm_test/newfile.txt",
+    "ls -la perm_test/newfile.txt"
+  ],
+  "cleanup_commands": [
+    "rm -rf perm_test"
+  ]
+}

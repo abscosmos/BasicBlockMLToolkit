@@ -1,0 +1,23 @@
+{
+  "program_id": "security_tools",
+  "setup_commands": [
+    "echo 'sensitive data' > secret.txt",
+    "echo 'public information' > public.txt"
+  ],
+  "trace_commands": [
+    "md5sum secret.txt",
+    "sha1sum secret.txt",
+    "sha256sum secret.txt",
+    "sha512sum public.txt",
+    "base64 secret.txt",
+    "base64 -d <<< 'dGVzdCBkYXRh'",
+    "openssl version",
+    "gpg --version | head -3",
+    "ssh --help | head -5",
+    "scp --help | head -5",
+    "rsync --help | head -5"
+  ],
+  "cleanup_commands": [
+    "rm -f secret.txt public.txt"
+  ]
+}

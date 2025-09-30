@@ -1,0 +1,21 @@
+{
+  "program_id": "regex_patterns",
+  "setup_commands": [
+    "echo -e 'user1@example.com\\nuser2@test.org\\ninvalid-email\\nuser3@domain.net' > emails.txt",
+    "echo -e '192.168.1.1\\n10.0.0.1\\n256.300.1.1\\n172.16.0.1' > ips.txt",
+    "echo -e 'Phone: 123-456-7890\\nPhone: (555) 123-4567\\nInvalid: 12345\\nPhone: +1-800-555-0123' > phones.txt"
+  ],
+  "trace_commands": [
+    "grep -E '[a-zA-Z0-9]+@[a-zA-Z0-9]+\\.[a-zA-Z]+' emails.txt",
+    "grep -E '^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$' ips.txt",
+    "grep -E '\\([0-9]{3}\\) [0-9]{3}-[0-9]{4}' phones.txt",
+    "grep -v 'invalid' emails.txt",
+    "grep -i 'phone' phones.txt",
+    "sed -E 's/([0-9]+)-([0-9]+)-([0-9]+)/\\1.\\2.\\3/g' phones.txt",
+    "awk -F'@' '{print $1}' emails.txt",
+    "awk -F'.' '{print $1\".\"$2}' ips.txt"
+  ],
+  "cleanup_commands": [
+    "rm -f emails.txt ips.txt phones.txt"
+  ]
+}

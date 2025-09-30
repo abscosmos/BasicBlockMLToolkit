@@ -1,0 +1,22 @@
+{
+  "program_id": "job_control",
+  "setup_commands": [
+    "echo '#!/bin/bash\necho \"Job started\"\nsleep 1\necho \"Job finished\"' > job_script.sh",
+    "chmod +x job_script.sh"
+  ],
+  "trace_commands": [
+    "at --help | head -5",
+    "batch --help | head -5", 
+    "crontab -l || echo 'No crontab'",
+    "screen --help | head -5",
+    "tmux --help | head -5",
+    "nohup echo 'Background job' &",
+    "jobs",
+    "sleep 0.5 &",
+    "jobs",
+    "wait"
+  ],
+  "cleanup_commands": [
+    "rm -f job_script.sh"
+  ]
+}

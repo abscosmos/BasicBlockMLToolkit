@@ -1,0 +1,18 @@
+{
+  "program_id": "find_search",
+  "setup_commands": [
+    "mkdir -p search_test/{dir1,dir2,dir3}",
+    "touch search_test/file1.txt search_test/file2.log search_test/dir1/nested.txt",
+    "touch search_test/dir2/data.csv search_test/dir3/script.sh",
+    "chmod +x search_test/dir3/script.sh"
+  ],
+  "trace_commands": [
+    "find search_test -name '*.txt'",
+    "find search_test -type f -executable",
+    "find search_test -type d",
+    "find search_test -size 0c"
+  ],
+  "cleanup_commands": [
+    "rm -rf search_test"
+  ]
+}
