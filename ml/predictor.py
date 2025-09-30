@@ -213,7 +213,15 @@ class BasicBlockPredictor:
         model_dir = Path(model_path).parent
         model_dir.mkdir(parents=True, exist_ok=True)
         
-        self.learner._save_checkpoint(model_path, epoch=0, val_loss=0.0)
+        # get current training state for proper checkpoint saving
+        current_epoch = 0
+        current_val_loss = 0.0
+        if self.learner.training_history['initial_losses']:
+            last_entry = self.learner.training_history['initial_losses'][-1]
+            current_epoch = last_entry['epoch'] + 1  # next epoch number
+            current_val_loss = last_entry['val_loss']
+        
+        self.learner._save_checkpoint(model_path, epoch=current_epoch, val_loss=current_val_loss)
         
         if tokenizer_path:
             tokenizer_dir = Path(tokenizer_path).parent
