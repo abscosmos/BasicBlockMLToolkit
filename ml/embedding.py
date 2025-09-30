@@ -135,8 +135,15 @@ class DynamicEmbedding(nn.Module):
         """Custom state dict loading that restores metadata"""
 
         # metadata
-        self.current_vocab_size = state_dict.pop('current_vocab_size', 0)
-        self.total_expansions = state_dict.pop('total_expansions', 0)
+        if 'current_vocab_size' in state_dict:
+            self.current_vocab_size = state_dict.pop('current_vocab_size')
+        else:
+            self.current_vocab_size = 0
+            
+        if 'total_expansions' in state_dict:
+            self.total_expansions = state_dict.pop('total_expansions')
+        else:
+            self.total_expansions = 0
         
         # weights
         return super().load_state_dict(state_dict, strict)
