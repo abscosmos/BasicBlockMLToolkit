@@ -251,20 +251,23 @@ class BasicBlockPredictor:
         
         config: ModelConfig = checkpoint['model_config']
 
-        # create model with appropriate vocab size
+        # get actual embedding size from saved state dict to handle excess capacity
+        state_dict = checkpoint['model_state_dict']
+        saved_embedding_size = state_dict['embedding.embedding.weight'].shape[0]
+        
+        # create model with embedding capacity from checkpoint
         model = OnlineBasicBlockPredictor(
             device=self.device,
-            initial_vocab_size=max(1000, saved_vocab_size, len(self.tokenizer)),
+            initial_vocab_size=saved_embedding_size,  # Use saved embedding capacity
             config=config,
         ).to(self.device)
         
-        # ensure model components match saved state
-        state_dict = checkpoint['model_state_dict']
-        
-        # check if we need to expand embedding for saved state
         if 'embedding.current_vocab_size' in state_dict:
-            target_vocab_size = state_dict['embedding.current_vocab_size'].item()
-            model.embedding.expand_vocabulary(target_vocab_size)
+            vocab_size_value = state_dict['embedding.current_vocab_size']
+            # Handle both tensor and int values
+            target_vocab_size = vocab_size_value.item() if hasattr(vocab_size_value, 'item') else vocab_size_value
+        else:
+            target_vocab_size = len(self.tokenizer)
         
         # ensure output projection exists with correct size
         if 'output_projection.weight' in state_dict:
@@ -273,6 +276,9 @@ class BasicBlockPredictor:
         
         # load model state with strict=False to handle missing/extra keys
         model.load_state_dict(state_dict, strict=False)
+        
+        if model.get_vocab_size() == 0:
+            model.embedding.current_vocab_size = target_vocab_size
         
         # create learner and restore training state
         learner = OnlineLearner(
