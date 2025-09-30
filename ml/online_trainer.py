@@ -69,7 +69,8 @@ class OnlineLearner:
         batch_size: int = 8,
         validation_split: float = 0.15,
         test_split: float = 0.0,
-        save_path: Optional[os.PathLike] = None
+        save_path: Optional[os.PathLike] = None,
+        resume_from_epoch: int = 0,
     ) -> dict[str, Any]:
         """
         Perform initial training on historical trace data to establish base patterns.
@@ -81,6 +82,7 @@ class OnlineLearner:
             validation_split: Fraction of data to use for validation
             test_split: Fraction of data to use for testing (0.0 = no test split)
             save_path: Optional path to save best model
+            resume_from_epoch: Epoch to resume training from (if loading from checkpoint)
             
         Returns:
             Training results and metrics
@@ -99,7 +101,7 @@ class OnlineLearner:
         self.model.train()
         best_val_loss = float('inf')
 
-        epoch_pbar = tqdm(range(epochs), desc="Initial Training", mininterval=0.5)
+        epoch_pbar = tqdm(range(resume_from_epoch, epochs), desc="Initial Training", mininterval=0.5)
 
         for epoch in epoch_pbar:
             train_loss = self._train_epoch(train_loader, self.initial_optimizer)
