@@ -1,0 +1,23 @@
+{
+  "program_id": "disk_analysis",
+  "setup_commands": [
+    "mkdir -p disk_test/large disk_test/small",
+    "dd if=/dev/zero of=disk_test/large/bigfile bs=1024 count=100",
+    "echo 'small file' > disk_test/small/tiny.txt"
+  ],
+  "trace_commands": [
+    "df -h",
+    "df -i", 
+    "du -sh disk_test/",
+    "du -ah disk_test/",
+    "find disk_test -size +50k",
+    "find disk_test -size -1k",
+    "ls -lah disk_test/large/",
+    "file disk_test/large/bigfile",
+    "file disk_test/small/tiny.txt",
+    "wc -c disk_test/large/bigfile"
+  ],
+  "cleanup_commands": [
+    "rm -rf disk_test"
+  ]
+}

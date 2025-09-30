@@ -1,0 +1,16 @@
+{
+  "program_id": "sed_editing",
+  "setup_commands": [
+    "echo -e 'apple\\nbanana\\ncherry\\napple pie\\nbanana split' > fruits.txt",
+    "echo -e 'line 1\\nTEST LINE\\nline 3\\nAnother TEST\\nfinal line' > test_file.txt"
+  ],
+  "trace_commands": [
+    "sed 's/apple/APPLE/g' fruits.txt",
+    "sed '/TEST/d' test_file.txt",
+    "sed -n '2,4p' fruits.txt",
+    "sed 's/^/>> /' test_file.txt"
+  ],
+  "cleanup_commands": [
+    "rm -f fruits.txt test_file.txt"
+  ]
+}

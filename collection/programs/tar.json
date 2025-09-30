@@ -1,0 +1,18 @@
+{
+  "program_id": "tar_archive",
+  "setup_commands": [
+    "mkdir -p archive_test/subdir",
+    "echo 'File 1 content' > archive_test/file1.txt",
+    "echo 'File 2 content' > archive_test/file2.txt",
+    "echo 'Subdir file' > archive_test/subdir/sub.txt"
+  ],
+  "trace_commands": [
+    "tar -cf test.tar archive_test/",
+    "tar -tf test.tar",
+    "tar -xf test.tar",
+    "tar -czf test.tar.gz archive_test/"
+  ],
+  "cleanup_commands": [
+    "rm -rf archive_test test.tar test.tar.gz"
+  ]
+}

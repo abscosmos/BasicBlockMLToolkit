@@ -1,0 +1,27 @@
+{
+  "program_id": "git_operations",
+  "setup_commands": [
+    "mkdir -p git_test && cd git_test",
+    "git init",
+    "git config user.email 'test@example.com'",
+    "git config user.name 'Test User'",
+    "echo 'Initial content' > README.md",
+    "echo 'function test() { return true; }' > script.js"
+  ],
+  "trace_commands": [
+    "git add README.md",
+    "git commit -m 'Initial commit'",
+    "git status",
+    "git log --oneline",
+    "git branch",
+    "git checkout -b feature",
+    "git checkout main",
+    "git diff --help | head -5",
+    "git merge --help | head -5",
+    "git push --help | head -5",
+    "git pull --help | head -5"
+  ],
+  "cleanup_commands": [
+    "cd .. && rm -rf git_test"
+  ]
+}

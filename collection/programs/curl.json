@@ -1,0 +1,14 @@
+{
+  "program_id": "curl_requests",
+  "setup_commands": [
+    "echo '{\"test\": \"data\", \"number\": 42}' > post_data.json"
+  ],
+  "trace_commands": [
+    "curl --version",
+    "curl -s --connect-timeout 2 http://httpbin.org/get || curl --help | head -5",
+    "curl -s --connect-timeout 2 -H 'Accept: application/json' http://httpbin.org/headers || echo 'Network request failed'"
+  ],
+  "cleanup_commands": [
+    "rm -f post_data.json"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "program_id": "hardware_info",
+  "setup_commands": [
+    "echo 'Hardware information collection' > hw_test.txt"
+  ],
+  "trace_commands": [
+    "lscpu",
+    "lsblk",
+    "lsusb || echo 'lsusb not available'",
+    "lspci || echo 'lspci not available'", 
+    "lshw --help | head -5 || echo 'lshw not available'",
+    "dmidecode --help | head -5 || echo 'dmidecode not available'",
+    "fdisk -l || echo 'fdisk requires root'",
+    "parted --help | head -5 || echo 'parted not available'",
+    "hdparm --help | head -5 || echo 'hdparm not available'",
+    "smartctl --help | head -5 || echo 'smartctl not available'",
+    "sensors || echo 'sensors not available'",
+    "acpi || echo 'acpi not available'"
+  ],
+  "cleanup_commands": [
+    "rm -f hw_test.txt"
+  ]
+}

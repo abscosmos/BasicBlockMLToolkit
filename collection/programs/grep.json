@@ -1,0 +1,19 @@
+{
+  "program_id": "grep_search",
+  "setup_commands": [
+    "echo -e 'apple\\nbanana\\ncherry\\napricot\\nblueberry' > fruits.txt",
+    "echo -e 'line 1\\ntest pattern here\\nline 3\\nanother test\\nfinal line' > patterns.txt",
+    "mkdir logs",
+    "echo 'ERROR: failed to connect' > logs/error.log",
+    "echo 'INFO: server started' > logs/info.log"
+  ],
+  "trace_commands": [
+    "grep 'ap' fruits.txt",
+    "grep -i 'test' patterns.txt", 
+    "grep -r 'ERROR' logs/"
+  ],
+  "cleanup_commands": [
+    "rm -f fruits.txt patterns.txt",
+    "rm -rf logs"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "program_id": "make_build",
+  "setup_commands": [
+    "echo 'all: program\\nprogram: main.c utils.c\\n\\tgcc -o program main.c utils.c\\nclean:\\n\\trm -f program *.o' > Makefile",
+    "echo '#include <stdio.h>\nextern void print_utils();\nint main() { printf(\"Main program\\n\"); print_utils(); return 0; }' > main.c",
+    "echo '#include <stdio.h>\nvoid print_utils() { printf(\"Utils function called\\n\"); }' > utils.c"
+  ],
+  "trace_commands": [
+    "make all",
+    "make clean",
+    "make program"
+  ],
+  "cleanup_commands": [
+    "rm -f Makefile *.c program"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "program_id": "log_analysis",
+  "setup_commands": [
+    "echo -e '2024-01-01 10:00:00 INFO Server started\\n2024-01-01 10:05:00 WARN High memory usage\\n2024-01-01 10:10:00 ERROR Database connection failed\\n2024-01-01 10:15:00 INFO Connection restored\\n2024-01-01 10:20:00 DEBUG Processing request' > server.log",
+    "echo -e '127.0.0.1 - - [01/Jan/2024:10:00:00] \"GET /index.html HTTP/1.1\" 200 1024\\n127.0.0.1 - - [01/Jan/2024:10:01:00] \"POST /api/data HTTP/1.1\" 404 512\\n192.168.1.100 - - [01/Jan/2024:10:02:00] \"GET /admin HTTP/1.1\" 403 256' > access.log"
+  ],
+  "trace_commands": [
+    "grep ERROR server.log",
+    "grep -c INFO server.log", 
+    "awk '/ERROR/ {print $0}' server.log",
+    "awk '{print $1, $2}' server.log",
+    "grep '200' access.log",
+    "grep -v '200' access.log",
+    "cut -d' ' -f1 access.log | sort | uniq -c",
+    "tail -n 2 server.log",
+    "head -n 2 access.log",
+    "wc -l server.log access.log"
+  ],
+  "cleanup_commands": [
+    "rm -f server.log access.log"
+  ]
+}

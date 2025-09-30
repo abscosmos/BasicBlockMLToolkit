@@ -1,0 +1,22 @@
+{
+  "program_id": "csv_processing",
+  "setup_commands": [
+    "echo -e 'Name,Age,City,Salary\\nJohn,25,NYC,50000\\nJane,30,LA,60000\\nBob,22,Chicago,45000\\nAlice,28,Boston,55000' > employees.csv",
+    "echo -e 'Product,Price,Quantity\\nLaptop,999.99,10\\nMouse,19.99,50\\nKeyboard,79.99,25\\nMonitor,299.99,15' > inventory.csv"
+  ],
+  "trace_commands": [
+    "head -1 employees.csv",
+    "tail -n +2 employees.csv",
+    "cut -d',' -f1,4 employees.csv",
+    "awk -F',' '$2 > 25 {print $1, $2}' employees.csv",
+    "awk -F',' '{sum += $4} END {print \"Total salary:\", sum}' employees.csv",
+    "sort -t',' -k2 -n employees.csv",
+    "sort -t',' -k4 -n inventory.csv",
+    "grep -v 'Name' employees.csv | wc -l",
+    "awk -F',' 'NR>1 {print $3}' employees.csv | sort | uniq",
+    "awk -F',' 'NR>1 {total += $2 * $3} END {print \"Inventory value:\", total}' inventory.csv"
+  ],
+  "cleanup_commands": [
+    "rm -f employees.csv inventory.csv"
+  ]
+}

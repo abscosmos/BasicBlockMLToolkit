@@ -1,0 +1,17 @@
+{
+  "program_id": "ls_operations",
+  "setup_commands": [
+    "mkdir -p test_dir",
+    "echo 'file1 content' > test_dir/file1.txt",
+    "echo 'file2 content' > test_dir/file2.txt",
+    "mkdir -p test_dir/subdir"
+  ],
+  "trace_commands": [
+    "ls -la test_dir",
+    "ls -R test_dir",
+    "ls -lSh /usr/bin"
+  ],
+  "cleanup_commands": [
+    "rm -rf test_dir"
+  ]
+}

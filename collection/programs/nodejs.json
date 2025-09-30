@@ -1,0 +1,16 @@
+{
+  "program_id": "nodejs_execution",
+  "setup_commands": [
+    "echo 'function fibonacci(n) { return n <= 1 ? n : fibonacci(n-1) + fibonacci(n-2); } console.log(\"fib(20) =\", fibonacci(20));' > compute.js",
+    "echo 'const data = {items: Array.from({length: 100}, (_, i) => ({id: i, value: Math.random()})), total: 100}; console.log(JSON.stringify(data));' > json_gen.js",
+    "echo 'const fs = require(\"fs\"); fs.writeFileSync(\"output.txt\", \"Hello from Node.js\\n\"); console.log(\"File written\");' > file_ops.js"
+  ],
+  "trace_commands": [
+    "node compute.js",
+    "node json_gen.js",
+    "node file_ops.js"
+  ],
+  "cleanup_commands": [
+    "rm -f *.js output.txt"
+  ]
+}

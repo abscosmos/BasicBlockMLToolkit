@@ -1,0 +1,21 @@
+{
+  "program_id": "text_editors",
+  "setup_commands": [
+    "echo 'Original text content' > edit_test.txt",
+    "echo -e 'line 1\\nline 2\\nline 3' > multiline_edit.txt"
+  ],
+  "trace_commands": [
+    "vim --help | head -5",
+    "nano --help | head -5", 
+    "emacs --help | head -5",
+    "vi --help | head -5",
+    "nano --version | head -3",
+    "vim -c 'wq' edit_test.txt",
+    "nano --view multiline_edit.txt",
+    "sed -i 's/line/LINE/g' multiline_edit.txt",
+    "cat multiline_edit.txt"
+  ],
+  "cleanup_commands": [
+    "rm -f edit_test.txt multiline_edit.txt"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "program_id": "file_analysis",
+  "setup_commands": [
+    "echo 'Hello World from C' > hello.c",
+    "gcc -o hello hello.c",
+    "echo 'Binary data with strings: USER=test, PATH=/usr/bin' | cat - /dev/urandom | head -c 1024 > binary_data",
+    "echo 'Text with embedded strings' >> binary_data"
+  ],
+  "trace_commands": [
+    "strings hello",
+    "strings binary_data",
+    "file hello",
+    "file binary_data",
+    "file hello.c",
+    "ldd hello",
+    "size hello",
+    "nm hello | head -10",
+    "objdump -h hello",
+    "objdump -t hello | head -10",
+    "readelf -h hello",
+    "strip --version | head -3"
+  ],
+  "cleanup_commands": [
+    "rm -f hello hello.c binary_data"
+  ]
+}

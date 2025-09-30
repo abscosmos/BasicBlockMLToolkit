@@ -1,0 +1,19 @@
+{
+  "program_id": "network_tools",
+  "setup_commands": [
+    "echo 'Network testing data' > network_test.txt"
+  ],
+  "trace_commands": [
+    "wget --help | head -5",
+    "curl --version | head -3",
+    "ping -c 1 127.0.0.1",
+    "netstat --help | head -5",
+    "ss --help | head -5",
+    "dig --help | head -5",
+    "nslookup --help | head -5",
+    "traceroute --help | head -5"
+  ],
+  "cleanup_commands": [
+    "rm -f network_test.txt"
+  ]
+}

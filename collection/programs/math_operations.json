@@ -1,0 +1,24 @@
+{
+  "program_id": "math_operations", 
+  "setup_commands": [
+    "echo -e '10\\n20\\n30\\n40\\n50' > numbers.txt",
+    "echo -e '1.5\\n2.7\\n3.14\\n4.2' > floats.txt"
+  ],
+  "trace_commands": [
+    "expr 25 + 75",
+    "expr 100 - 25", 
+    "expr 12 \\* 8",
+    "expr 144 / 12",
+    "expr 17 % 5",
+    "bc -l <<< '3.14159 * 2'",
+    "bc -l <<< 'sqrt(16)'",
+    "bc -l <<< '2^10'",
+    "awk '{sum += $1} END {print sum}' numbers.txt",
+    "awk '{sum += $1; count++} END {print sum/count}' numbers.txt",
+    "seq 1 2 20",
+    "seq 10 -1 1"
+  ],
+  "cleanup_commands": [
+    "rm -f numbers.txt floats.txt"
+  ]
+}

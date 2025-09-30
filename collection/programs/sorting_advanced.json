@@ -1,0 +1,24 @@
+{
+  "program_id": "sorting_advanced", 
+  "setup_commands": [
+    "echo -e '3 1\\n1 2\\n2 3\\n1 3' > dependencies.txt",
+    "echo -e 'zebra\\napple\\nbanana\\nApple\\nZebra' > mixed_case.txt",
+    "echo -e 'file1.txt 1024\\nfile2.txt 2048\\nfile3.txt 512' > sizes.txt",
+    "echo -e '192.168.1.10\\n192.168.1.2\\n192.168.1.100' > ips.txt"
+  ],
+  "trace_commands": [
+    "sort dependencies.txt",
+    "sort -k2 dependencies.txt",
+    "sort -n dependencies.txt",
+    "tsort dependencies.txt",
+    "sort -f mixed_case.txt",
+    "sort -r mixed_case.txt", 
+    "sort -k2 -n sizes.txt",
+    "sort -u mixed_case.txt",
+    "sort -t. -k4 -n ips.txt",
+    "shuf mixed_case.txt"
+  ],
+  "cleanup_commands": [
+    "rm -f dependencies.txt mixed_case.txt sizes.txt ips.txt"
+  ]
+}

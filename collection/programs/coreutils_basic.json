@@ -1,0 +1,26 @@
+{
+  "program_id": "coreutils_basic",
+  "setup_commands": [
+    "echo 'Hello World' > test.txt",
+    "echo -e 'line1\\nline2\\nline3\\nline4\\nline5' > multiline.txt",
+    "mkdir -p testdir/subdir"
+  ],
+  "trace_commands": [
+    "ls -la testdir",
+    "cat test.txt",
+    "echo 'Basic echo test'",
+    "touch newfile.txt", 
+    "pwd",
+    "basename /usr/bin/gcc",
+    "dirname /home/user/document.txt",
+    "date",
+    "sleep 0.1",
+    "true",
+    "false",
+    "head -n 3 multiline.txt",
+    "tail -n 2 multiline.txt"
+  ],
+  "cleanup_commands": [
+    "rm -rf test.txt multiline.txt newfile.txt testdir"
+  ]
+}

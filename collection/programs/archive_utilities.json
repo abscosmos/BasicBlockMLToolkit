@@ -1,0 +1,24 @@
+{
+  "program_id": "archive_utilities",
+  "setup_commands": [
+    "mkdir -p archive_data/subdir",
+    "echo 'Archive content 1' > archive_data/file1.txt",
+    "echo 'Archive content 2' > archive_data/file2.txt",
+    "echo 'Subdirectory content' > archive_data/subdir/sub.txt"
+  ],
+  "trace_commands": [
+    "tar -czf archive.tar.gz archive_data/",
+    "tar -tzf archive.tar.gz",
+    "gzip -c archive_data/file1.txt > file1.gz",
+    "gunzip -c file1.gz",
+    "bzip2 -c archive_data/file2.txt > file2.bz2",
+    "bunzip2 -c file2.bz2",
+    "xz -c archive_data/file1.txt > file1.xz",
+    "unxz -c file1.xz",
+    "zip -r archive.zip archive_data/",
+    "unzip -l archive.zip"
+  ],
+  "cleanup_commands": [
+    "rm -rf archive_data archive.tar.gz archive.zip file1.gz file2.bz2 file1.xz"
+  ]
+}

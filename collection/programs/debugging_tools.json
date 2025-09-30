@@ -1,0 +1,24 @@
+{
+  "program_id": "debugging_tools",
+  "setup_commands": [
+    "echo '#include <stdio.h>\nint main() { printf(\"Debug me\\n\"); return 0; }' > debug.c",
+    "gcc -g -o debug debug.c",
+    "echo '#!/bin/bash\necho \"Tracing this script\"\nls /tmp' > trace_me.sh",
+    "chmod +x trace_me.sh"
+  ],
+  "trace_commands": [
+    "gdb --version | head -3",
+    "gdb --batch --ex 'info functions' debug",
+    "strace -c echo 'hello'",
+    "strace -e trace=write echo 'traced'",
+    "ltrace --version | head -3",
+    "objdump -d debug | head -10",
+    "readelf -S debug | head -10",
+    "nm -D debug 2>/dev/null || nm debug | head -5",
+    "strings debug | head -5",
+    "file debug"
+  ],
+  "cleanup_commands": [
+    "rm -f debug.c debug trace_me.sh"
+  ]
+}

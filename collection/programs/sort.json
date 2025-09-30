@@ -1,0 +1,16 @@
+{
+  "program_id": "sort_operations",
+  "setup_commands": [
+    "echo -e 'zebra\\napple\\nbanana\\ncherry' > words.txt",
+    "echo -e '10\\n5\\n20\\n1\\n15' > numbers.txt",
+    "echo -e 'file1.txt 500\\nfile2.txt 1200\\nfile3.txt 800' > sizes.txt"
+  ],
+  "trace_commands": [
+    "sort words.txt",
+    "sort -n numbers.txt",
+    "sort -k2 -n sizes.txt"
+  ],
+  "cleanup_commands": [
+    "rm -f words.txt numbers.txt sizes.txt"
+  ]
+}

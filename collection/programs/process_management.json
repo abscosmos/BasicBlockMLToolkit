@@ -1,0 +1,22 @@
+{
+  "program_id": "process_management",
+  "setup_commands": [
+    "echo 'Process management testing' > proc_test.txt"
+  ],
+  "trace_commands": [
+    "ps aux | head -10",
+    "ps --help | head -5",
+    "top --help | head -5",
+    "htop --help | head -5",
+    "kill --help | head -3",
+    "killall --help | head -3",
+    "pgrep --help | head -3",
+    "pkill --help | head -3",
+    "jobs",
+    "nohup echo 'test'",
+    "timeout 1 sleep 0.5"
+  ],
+  "cleanup_commands": [
+    "rm -f proc_test.txt"
+  ]
+}
