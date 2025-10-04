@@ -85,9 +85,12 @@ Additionally, `ml/main.py` has a demo script that tokenizes the basic blocks, tr
    # if your tokenizer & model save paths still point to ./run
    mkdir run
    ```
-3. Run the script with `uv`.
+3. Test the training & inference in Jupyter Notebook.
    ```
-   uv run --active ml/main.py
+   # ensure venv is activated
+   source .venv/bin/activate
+   # start jupyter notebook
+   uv --with jupyter jupyter lab
    ```
 
 ## Setup
