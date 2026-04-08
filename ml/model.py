@@ -118,10 +118,14 @@ class OnlineBasicBlockPredictor(nn.Module):
         # transform through encoder with causal mask
         transformed = self.transformer(embeddings, mask=mask)
 
+        # Ensure output projection can handle all tokens seen so far
+        # The embedding forward pass updates current_vocab_size, but we double-check
+        # against input_ids to ensure we have capacity for all tokens in this batch
         current_vocab_size = max(self.embedding.get_vocab_size(), input_ids.max().item() + 1)
         if labels is not None:
+            # Safety check: ensure we can handle any tokens in labels too
             current_vocab_size = max(current_vocab_size, labels.max().item() + 1)
-        
+
         self._ensure_output_projection(current_vocab_size)
 
         logits = self.output_projection(transformed)
@@ -130,10 +134,14 @@ class OnlineBasicBlockPredictor(nn.Module):
         
         # compute loss
         if labels is not None:
-            # shift logits and labels for next-token prediction
-            shift_logits = logits[..., :-1, :].contiguous()
-            shift_labels = labels[..., 1:].contiguous()
-            
+            # Shift logits and labels for next-token prediction
+            # At position j, the model predicts what comes AFTER position j
+            # shift_logits[j] = prediction at position j (predicting position j+1)
+            # shift_labels[j] = actual token at position j+1
+            # This correctly aligns predictions with their targets
+            shift_logits = logits[..., :-1, :].contiguous()  # [batch, seq_len-1, vocab_size]
+            shift_labels = labels[..., 1:].contiguous()       # [batch, seq_len-1]
+
             loss_fn = nn.CrossEntropyLoss()
             loss = loss_fn(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
             result['loss'] = loss

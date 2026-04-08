@@ -11,10 +11,12 @@ class BasicBlockDataset(Dataset):
         self.samples = []
 
         # Create sliding window samples from all sequences
+        # For autoregressive training: input and target are the same sequence
+        # The model will shift internally for next-token prediction
         for sequence in tokenized_sequences:
             for i in range(len(sequence) - context_len):
                 input_seq = sequence[i:i + context_len]
-                target_seq = sequence[i + 1:i + context_len + 1]
+                target_seq = sequence[i:i + context_len]  # Same as input, model shifts internally
                 self.samples.append((input_seq, target_seq))
 
     def __len__(self):

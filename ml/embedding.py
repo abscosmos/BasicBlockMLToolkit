@@ -28,9 +28,11 @@ class DynamicEmbedding(nn.Module):
             device=self._device
         )
 
-        self.current_vocab_size = 0
+        # Initialize to the expected initial vocabulary size from tokenizer
+        # This will be updated during forward passes as new tokens are encountered
+        self.current_vocab_size = initial_vocab_size
         self.total_expansions = 0
-        
+
         self._initialize_embeddings(0, initial_vocab_size)
     
     def _initialize_embeddings(self, start_idx: int, end_idx: int):

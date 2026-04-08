@@ -300,13 +300,13 @@ class OnlineLearner:
         
         with torch.no_grad():
             for seq in sequences[:10]:
-                if len(seq) <= self.model.context_length:
+                if len(seq) < self.model.config.context_length:
                     continue
-                
+
                 # random slice for prediction
-                start_idx = np.random.randint(0, len(seq) - self.model.context_length)
-                context = seq[start_idx:start_idx + self.model.context_length - 1]
-                target = seq[start_idx + self.model.context_length - 1]
+                start_idx = np.random.randint(0, len(seq) - self.model.config.context_length)
+                context = seq[start_idx:start_idx + self.model.config.context_length - 1]
+                target = seq[start_idx + self.model.config.context_length - 1]
                 
                 if len(context) == 0:
                     continue
@@ -415,9 +415,13 @@ class OnlineLearner:
             # forward
             outputs = self.model(batch_inputs, labels=batch_targets)
             loss = outputs['loss']
-            
+
             # backward
             loss.backward()
+
+            # gradient clipping to prevent exploding gradients
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+
             optimizer.step()
             
             total_loss += loss.item()
